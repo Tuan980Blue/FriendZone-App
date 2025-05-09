@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
+import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system, // Sẽ tự động chuyển đổi giữa light và dark theme dựa trên cài đặt hệ thống
-      home: const LoginScreen(),
+      home: const SplashScreen(),
     );
   }
 }
