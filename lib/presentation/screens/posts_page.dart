@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import '../models/post.dart';
-import '../services/api_service.dart';
+import '../../domain/entities/post.dart';
+import '../../domain/usecases/posts/get_posts_usecase.dart';
 import '../widgets/post_card.dart';
 
 class PostsPage extends StatefulWidget {
-  const PostsPage({super.key});
+  final GetPostsUseCase getPostsUseCase;
+
+  const PostsPage({
+    super.key,
+    required this.getPostsUseCase,
+  });
 
   @override
   State<PostsPage> createState() => _PostsPageState();
@@ -48,16 +53,14 @@ class _PostsPageState extends State<PostsPage> {
     });
 
     try {
-      final data = await ApiService.fetchPosts(currentPage, 9);
-      final List<dynamic> postsData = data['posts'];
-      final pagination = data['pagination'];
+      final posts = await widget.getPostsUseCase(currentPage, 9);
 
       if (!mounted) return;
 
       setState(() {
-        posts.addAll(postsData.map((post) => Post.fromJson(post)));
+        this.posts.addAll(posts);
         currentPage++;
-        hasMore = currentPage <= pagination['totalPages'];
+        hasMore = posts.isNotEmpty;
         isLoading = false;
       });
     } catch (e) {

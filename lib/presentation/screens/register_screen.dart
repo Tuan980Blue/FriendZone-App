@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import '../../domain/usecases/auth/register_usecase.dart';
+import '../../domain/usecases/auth/login_usecase.dart';
 import '../theme/app_theme.dart';
 import 'home_page.dart';
 import 'login_screen.dart';
+import '../../di/injection_container.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final RegisterUseCase registerUseCase;
+
+  const RegisterScreen({
+    super.key,
+    required this.registerUseCase,
+  });
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -22,6 +29,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   bool _obscurePassword = true;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  final LoginUseCase _loginUseCase = sl<LoginUseCase>();
 
   @override
   void initState() {
@@ -58,7 +66,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     });
 
     try {
-      await ApiService.register(
+      await widget.registerUseCase(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         username: _usernameController.text.trim(),
@@ -82,6 +90,16 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
         });
       }
     }
+  }
+
+  void _navigateToLogin() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => LoginScreen(
+          loginUseCase: _loginUseCase,
+        ),
+      ),
+    );
   }
 
   @override
@@ -344,127 +362,53 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           ),
                           const SizedBox(height: 24),
 
-                          // Error message with animation
+                          // Error message
                           if (_error.isNotEmpty)
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppTheme.error.withOpacity(0.1),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Text(
+                                _error,
+                                style: const TextStyle(color: Colors.red),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+
+                          // Register button
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _register,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppTheme.error.withOpacity(0.3)),
                               ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.error_outline, color: AppTheme.error, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      _error,
-                                      style: TextStyle(color: AppTheme.error),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          if (_error.isNotEmpty) const SizedBox(height: 16),
-
-                          // Register button with gradient
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppTheme.primaryBlue,
-                                  AppTheme.secondaryPurple,
-                                ],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primaryBlue.withOpacity(0.3),
-                                  blurRadius: 15,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _register,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Sign Up',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
+                                  )
+                                : const Text('Register'),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
 
-                          // Login link for existing users
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? const Color(0xFF2A2A2A)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primaryBlue.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
+                          // Login link
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Already have an account?',
+                                style: TextStyle(
+                                  color: AppTheme.textSecondary,
                                 ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Already have an account?',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pushReplacement(
-                                      MaterialPageRoute(
-                                        builder: (context) => const LoginScreen(),
-                                      ),
-                                    );
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: AppTheme.primaryBlue,
-                                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                                  ),
-                                  child: const Text(
-                                    'Log In',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                              TextButton(
+                                onPressed: _navigateToLogin,
+                                child: const Text('Login'),
+                              ),
+                            ],
                           ),
                         ],
                       ),

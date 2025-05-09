@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
-import '../models/user.dart';
-import '../services/api_service.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/usecases/auth/login_usecase.dart';
+import '../../domain/usecases/auth/get_current_user_usecase.dart';
+import '../../domain/usecases/auth/logout_usecase.dart';
 import 'login_screen.dart';
+import '../../di/injection_container.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final GetCurrentUserUseCase getCurrentUserUseCase;
+  final LogoutUseCase logoutUseCase;
+
+  const ProfileScreen({
+    super.key,
+    required this.getCurrentUserUseCase,
+    required this.logoutUseCase,
+  });
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -14,6 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _user;
   bool _isLoading = true;
   String _error = '';
+  final LoginUseCase _loginUseCase = sl<LoginUseCase>();
 
   @override
   void initState() {
@@ -23,7 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserProfile() async {
     try {
-      final user = await ApiService.getCurrentUser();
+      final user = await widget.getCurrentUserUseCase();
       setState(() {
         _user = user;
         _isLoading = false;
@@ -38,12 +49,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _handleLogout() async {
     try {
-      await ApiService.logout();
+      await widget.logoutUseCase();
       if (!mounted) return;
       
-      // Xóa tất cả các màn hình trong stack và chuyển về LoginScreen
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(
+            loginUseCase: _loginUseCase,
+          ),
+        ),
         (route) => false,
       );
     } catch (e) {
