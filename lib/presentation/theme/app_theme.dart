@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 class AppTheme {
   // Primary Colors - Instagram inspired
   static const Color primaryBlue = Color(0xFF0095F6);     // Instagram blue
-  static const Color secondaryPurple = Color(0xFFC13584); // Instagram purple
-
-  // Accent Colors
-  static const Color accentOrange = Color(0xFFE1306C);    // Instagram gradient orange
-  static const Color accentYellow = Color(0xFFF77737);    // Instagram gradient yellow
-  static const Color accentPink = Color(0xFFFD1D1D);      // Instagram gradient pink
+  static const Color secondaryPurple = Color(0xFF833AB4); // Instagram purple
+  static const Color accentPink = Color(0xFFE1306C);      // Instagram pink
+  static const Color accentOrange = Color(0xFFF77737);    // Instagram orange
+  static const Color accentYellow = Color(0xFFFCAF45);    // Instagram yellow
+  static const Color accentRed = Color(0xFFFD1D1D);       // Instagram red
 
   // Background Colors
   static const Color backgroundLight = Color(0xFFFAFAFA); // Instagram light background
@@ -29,19 +28,28 @@ class AppTheme {
   static const Color info = Color(0xFF0095F6);            // Instagram blue for info
 
   // Dark Mode Specific
-  static const Color darkModeAccent = Color(0xFF0095F6);  // Instagram blue for dark mode
+  static const Color darkModeAccent = Color(0xFFE1306C);  // Instagram pink for dark mode
 
   // Common Typography
   static const String fontFamily = 'Roboto';              // Instagram uses Roboto
 
+  // Instagram Gradient Colors
+  static const List<Color> instagramGradient = [
+    Color(0xFF833AB4),  // Purple
+    Color(0xFFE1306C),  // Pink
+    Color(0xFFF77737),  // Orange
+    Color(0xFFFCAF45),  // Yellow
+    Color(0xFFFD1D1D),  // Red
+  ];
+
   static ThemeData lightTheme = ThemeData(
     fontFamily: fontFamily,
     brightness: Brightness.light,
-    primaryColor: primaryBlue,
+    primaryColor: accentPink,
     scaffoldBackgroundColor: backgroundLight,
     cardColor: cardLight,
     colorScheme: ColorScheme.light(
-      primary: primaryBlue,
+      primary: accentPink,
       secondary: secondaryPurple,
       surface: white,
       background: backgroundLight,
@@ -54,7 +62,7 @@ class AppTheme {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: primaryBlue,
+        backgroundColor: accentPink,
         foregroundColor: white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -78,7 +86,7 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: primaryBlue),
+        borderSide: const BorderSide(color: accentPink),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     ),
@@ -91,7 +99,7 @@ class AppTheme {
     ),
     chipTheme: ChipThemeData(
       backgroundColor: const Color(0xFFEFEFEF),
-      selectedColor: primaryBlue,
+      selectedColor: accentPink,
       labelStyle: const TextStyle(color: textPrimary),
       secondaryLabelStyle: const TextStyle(color: white),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
