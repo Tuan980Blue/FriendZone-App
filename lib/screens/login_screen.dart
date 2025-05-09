@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 import 'home_page.dart';
 import 'register_screen.dart';
 
@@ -71,10 +72,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo
-                  const Icon(
-                    Icons.camera_alt_outlined,
-                    size: 64,
-                    color: Colors.black,
+                  Image.asset(
+                    Theme.of(context).brightness == Brightness.dark 
+                      ? 'assets/images/logo02.png'
+                      : 'assets/images/logo01.png',
+                    height: 120,
+                    width: 120,
                   ),
                   const SizedBox(height: 32),
 
@@ -82,10 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Email',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email_outlined),
+                      prefixIcon: Icon(Icons.email_outlined, color: AppTheme.primaryBlue),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -105,13 +107,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: Icon(Icons.lock_outline, color: AppTheme.primaryBlue),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
                               ? Icons.visibility_outlined
                               : Icons.visibility_off_outlined,
+                          color: AppTheme.primaryBlue,
                         ),
                         onPressed: () {
                           setState(() {
@@ -137,13 +139,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade50,
+                        color: AppTheme.error.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red.shade200),
+                        border: Border.all(color: AppTheme.error.withOpacity(0.3)),
                       ),
                       child: Text(
                         _error,
-                        style: TextStyle(color: Colors.red.shade700),
+                        style: TextStyle(color: AppTheme.error),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -153,8 +155,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: AppTheme.primaryBlue,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -166,8 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : const Text('Log In'),
@@ -176,13 +177,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Divider
                   Row(
-                    children: const [
-                      Expanded(child: Divider()),
+                    children: [
+                      Expanded(child: Divider(color: AppTheme.textSecondary.withOpacity(0.3))),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('OR'),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text('OR', style: TextStyle(color: AppTheme.textSecondary)),
                       ),
-                      Expanded(child: Divider()),
+                      Expanded(child: Divider(color: AppTheme.textSecondary.withOpacity(0.3))),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -191,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account?"),
+                      Text("Don't have an account?", style: TextStyle(color: AppTheme.textSecondary)),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).push(
@@ -200,6 +201,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           );
                         },
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.primaryBlue,
+                        ),
                         child: const Text('Sign Up'),
                       ),
                     ],
