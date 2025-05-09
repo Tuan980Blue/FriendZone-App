@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import '../../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../widgets/user_card.dart';
 
 class UserSuggestionsPage extends StatefulWidget {
-  const UserSuggestionsPage({super.key});
+  final GetUserSuggestionsUseCase getUserSuggestionsUseCase;
+
+  const UserSuggestionsPage({
+    super.key,
+    required this.getUserSuggestionsUseCase,
+  });
 
   @override
   State<UserSuggestionsPage> createState() => _UserSuggestionsPageState();
@@ -36,21 +41,14 @@ class _UserSuggestionsPageState extends State<UserSuggestionsPage> {
     });
 
     try {
-      final data = await ApiService.fetchUserSuggestions();
+      final suggestions = await widget.getUserSuggestionsUseCase();
       
       if (!mounted) return;
 
-      if (data['success'] == true) {
-        setState(() {
-          users = data['data'];
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          error = 'Failed to load suggestions';
-          isLoading = false;
-        });
-      }
+      setState(() {
+        users = suggestions;
+        isLoading = false;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {

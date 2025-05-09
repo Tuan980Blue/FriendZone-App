@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'screens/splash_screen.dart';
-import 'theme/app_theme.dart';
+import 'di/injection_container.dart' as di;
+import 'presentation/screens/splash_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await di.init();
   runApp(const MyApp());
 }
 
@@ -13,9 +15,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FriendZone',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // Sẽ tự động chuyển đổi giữa light và dark theme dựa trên cài đặt hệ thống
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
       home: const SplashScreen(),
     );
   }

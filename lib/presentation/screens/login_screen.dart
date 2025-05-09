@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import 'package:friendzoneapp/presentation/screens/register_screen.dart';
+import '../../domain/usecases/auth/login_usecase.dart';
+import '../../domain/usecases/auth/register_usecase.dart';
 import '../theme/app_theme.dart';
 import 'home_page.dart';
-import 'register_screen.dart';
+import '../../di/injection_container.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final LoginUseCase loginUseCase;
+
+  const LoginScreen({
+    super.key,
+    required this.loginUseCase,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -20,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   bool _obscurePassword = true;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  final RegisterUseCase _registerUseCase = sl<RegisterUseCase>();
 
   @override
   void initState() {
@@ -54,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     });
 
     try {
-      await ApiService.login(
+      await widget.loginUseCase(
         _emailController.text.trim(),
         _passwordController.text,
       );
@@ -75,6 +83,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         });
       }
     }
+  }
+
+  void _navigateToRegister() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => RegisterScreen(
+          registerUseCase: _registerUseCase,
+        ),
+      ),
+    );
   }
 
   @override
@@ -244,152 +262,51 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       ),
                       const SizedBox(height: 24),
 
-                      // Error message with animation
+                      // Error message
                       if (_error.isNotEmpty)
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppTheme.error.withOpacity(0.1),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            _error,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                      // Login button
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _login,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppTheme.error.withOpacity(0.3)),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error_outline, color: AppTheme.error, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _error,
-                                  style: TextStyle(color: AppTheme.error),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (_error.isNotEmpty) const SizedBox(height: 16),
-
-                      // Login button with gradient
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient: LinearGradient(
-                            colors: [
-                              AppTheme.primaryBlue,
-                              AppTheme.secondaryPurple,
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primaryBlue.withOpacity(0.3),
-                              blurRadius: 15,
-                              spreadRadius: 1,
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _login,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                )
-                              : const Text(
-                                  'Log In',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                        ),
+                              )
+                            : const Text('Login'),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
-                      // Divider with gradient
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppTheme.textSecondary.withOpacity(0.1),
-                                    AppTheme.textSecondary.withOpacity(0.3),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              'OR',
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppTheme.textSecondary.withOpacity(0.3),
-                                    AppTheme.textSecondary.withOpacity(0.1),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Register link with custom styling
+                      // Register link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Don't have an account?",
+                            'Don\'t have an account?',
                             style: TextStyle(
                               color: AppTheme.textSecondary,
-                              fontSize: 15,
                             ),
                           ),
                           TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const RegisterScreen(),
-                                ),
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppTheme.primaryBlue,
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                            child: const Text(
-                              'Sign Up',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            onPressed: _navigateToRegister,
+                            child: const Text('Register'),
                           ),
                         ],
                       ),

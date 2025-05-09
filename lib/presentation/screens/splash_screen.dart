@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:friendzoneapp/theme/app_theme.dart';
+import 'package:friendzoneapp/presentation/theme/app_theme.dart';
 import 'dart:async';
 import 'login_screen.dart';
+import 'home_page.dart';
+import '../../di/injection_container.dart';
+import '../../domain/usecases/auth/login_usecase.dart';
+import '../../domain/usecases/auth/get_current_user_usecase.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,6 +22,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   final String _fullText = 'Kết nối cùng FriendZone';
   int _textIndex = 0;
   Timer? _textTimer;
+  final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
+  final LoginUseCase _loginUseCase = sl<LoginUseCase>();
 
   @override
   void initState() {
@@ -52,14 +58,31 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         });
       } else {
         _textTimer?.cancel();
-        // Navigate to login screen after animation completes
-        Future.delayed(const Duration(seconds: 1), () {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-          );
-        });
+        // Check user authentication status and navigate accordingly
+        _checkAuthStatus();
       }
     });
+  }
+
+  Future<void> _checkAuthStatus() async {
+    try {
+      final user = await _getCurrentUserUseCase();
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => LoginScreen(
+              loginUseCase: _loginUseCase,
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
