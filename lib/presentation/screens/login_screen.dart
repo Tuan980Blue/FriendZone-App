@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:friendzoneapp/presentation/screens/register_screen.dart';
+import 'package:friendzoneapp/presentation/screens/forgot_password_screen.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/register_usecase.dart';
 import '../theme/app_theme.dart';
@@ -260,7 +261,35 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           },
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 12),
+
+                      // Forgot Password Link
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(50, 30),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              color: AppTheme.primaryBlue,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
 
                       // Error message
                       if (_error.isNotEmpty)
