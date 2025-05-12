@@ -19,50 +19,24 @@
 - **Auth**: JWT 
 - **Realtime Layer**: Socket.IO / ws / WebSocket API
 
-### 🚀 Work Follow Chat Online
-![workfollow-Chat](https://github.com/user-attachments/assets/9dbb4cc1-0bde-463e-97c5-f9b32ab46fa0)
-![workfollow-Chat](https://github.com/user-attachments/assets/e1d02694-4fde-4e6b-bf35-c291943c1e63)
-
-### 🚀 📝 State Message Chat Online
-![workfollow-Chat](https://github.com/user-attachments/assets/c97715b3-7fc4-4d6e-a249-cc71f7a6d852)
-
-## setup cho dự án :
-Frontend: Deploy trên Vercel
-Có CI/CD tự động
-Backend: Deploy trên Render
-Hỗ trợ WebSocket tốt
-Dễ dàng kết nối với MongoDB
-Có SSL miễn phí
-Database: Sử dụng MongoDB
-Ổn định và đáng tin cậy
-Dễ dàng backup và restore
-Có monitoring tools
-WebSocket: Có 2 lựa chọn:
-Sử dụng WebSocket trực tiếp từ backend (nếu deploy trên Render)
-
-## Cơ chế
-Tạo tin nhắn tạm thời ngay khi người dùng gửi:
-Tạo một tempMessage với đầy đủ thông tin (ID, nội dung, người gửi, người nhận, thời gian)
-Sử dụng timestamp làm ID tạm thời
-Thêm thông tin người gửi và người nhận từ state hiện tại
-Cập nhật state ngay lập tức:
-Thêm tin nhắn vào messages state để hiển thị ngay
-Cập nhật chats state để hiển thị tin nhắn mới nhất trong danh sách chat
-Gửi tin nhắn qua WebSocket:
-Sau khi cập nhật UI, gửi tin nhắn qua WebSocket
-Nếu có lỗi, có thể thêm logic để xóa tin nhắn tạm thời
-Thêm kiểm tra user:
-Kiểm tra user tồn tại trước khi gửi tin nhắn
-Thêm user vào dependencies của useCallback
-Cách này sẽ giúp:
-Tin nhắn hiển thị ngay lập tức khi gửi
-Người dùng thấy được tin nhắn của mình ngay lập tức
-Vẫn đảm bảo tin nhắn được gửi qua WebSocket
-Có thể xử lý lỗi nếu gửi thất bại
-
-## 
-WebSocket: Giao thức kết nối hai chiều, cho phép server gửi dữ liệu đến client mà không cần client yêu cầu.
-Quản lý kết nối: Server biết người dùng nào đang online và có thể gửi tin nhắn đến họ ngay lập tức.
-Optimistic UI: Client hiển thị tin nhắn ngay lập tức, không cần đợi phản hồi từ server.
-Xử lý sự kiện: Client đăng ký handler cho sự kiện receive_message để cập nhật UI khi nhận được tin nhắn mới.
-Đây là một thiết kế tốt cho hệ thống chat real-time, cho phép tin nhắn được gửi và nhận ngay lập tức, đồng thời đảm bảo độ tin cậy và khả năng mở rộng.
+### 🚀SOLID CODE
+ Dự án đã áp dụng các nguyên tắc SOLID:
+Single Responsibility Principle (SRP):
+Mỗi repository chỉ chịu trách nhiệm cho một domain cụ thể (Auth, Post, User)
+Mỗi use case chỉ thực hiện một nhiệm vụ duy nhất (Login, Register, GetPosts, etc.)
+Các data source được tách biệt theo chức năng (AuthRemoteDataSource, PostRemoteDataSource, etc.)
+Open/Closed Principle (OCP):
+Các repository được định nghĩa bằng abstract class, cho phép mở rộng mà không cần sửa đổi code hiện có
+Có thể thêm các implementation mới của repository mà không ảnh hưởng đến code đang chạy
+UseCase được thiết kế theo abstract class UseCase<Type, Params>, cho phép thêm các use case mới
+Liskov Substitution Principle (LSP):
+Các implementation của repository (AuthRepositoryImpl, PostRepositoryImpl) có thể thay thế interface của chúng mà không làm thay đổi behavior
+Các use case implement từ base UseCase class và tuân thủ contract của nó
+Interface Segregation Principle (ISP):
+Các repository interface được chia nhỏ theo domain (AuthRepository, PostRepository, UserRepository)
+Mỗi interface chỉ chứa các method cần thiết cho domain đó
+Không có interface nào bị force implement các method không cần thiết
+Dependency Inversion Principle (DIP):
+Các use case phụ thuộc vào repository interface (abstraction) thay vì implementation
+Dependency injection được sử dụng thông qua constructor
+Các dependency được inject thông qua get_it (dependency injection container)
