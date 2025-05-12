@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/usecases/posts/get_posts_usecase.dart';
 import '../widgets/post_card.dart';
+import '../widgets/create_post_widget.dart';
 
 class PostsPage extends StatefulWidget {
   final GetPostsUseCase getPostsUseCase;
@@ -72,6 +73,15 @@ class _PostsPageState extends State<PostsPage> {
     }
   }
 
+  void _refreshPosts() {
+    setState(() {
+      posts.clear();
+      currentPage = 1;
+      hasMore = true;
+    });
+    fetchPosts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,12 +91,7 @@ class _PostsPageState extends State<PostsPage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          setState(() {
-            posts.clear();
-            currentPage = 1;
-            hasMore = true;
-          });
-          await fetchPosts();
+          _refreshPosts();
         },
         child: posts.isEmpty && !isLoading
             ? Center(
@@ -101,14 +106,7 @@ class _PostsPageState extends State<PostsPage> {
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                posts.clear();
-                                currentPage = 1;
-                                hasMore = true;
-                              });
-                              fetchPosts();
-                            },
+                            onPressed: _refreshPosts,
                             child: const Text('Retry'),
                           ),
                         ],
@@ -117,9 +115,14 @@ class _PostsPageState extends State<PostsPage> {
               )
             : ListView.builder(
                 controller: _scrollController,
-                itemCount: posts.length + (hasMore ? 1 : 0),
+                itemCount: posts.length + (hasMore ? 1 : 0) + 1, // +1 for CreatePostWidget
                 itemBuilder: (context, index) {
-                  if (index == posts.length) {
+                  if (index == 0) {
+                    return CreatePostWidget();
+                  }
+                  
+                  final postIndex = index - 1;
+                  if (postIndex == posts.length) {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
@@ -128,7 +131,7 @@ class _PostsPageState extends State<PostsPage> {
                     );
                   }
 
-                  return PostCard(post: posts[index]);
+                  return PostCard(post: posts[postIndex]);
                 },
               ),
       ),

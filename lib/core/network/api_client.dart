@@ -1,24 +1,37 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 
 class ApiClient {
   final http.Client _client;
   String? _authToken;
+  static const String _tokenKey = 'auth_token';
 
-  ApiClient({http.Client? client}) : _client = client ?? http.Client();
+  ApiClient({http.Client? client}) : _client = client ?? http.Client() {
+    _loadToken();
+  }
+
+  Future<void> _loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    _authToken = prefs.getString(_tokenKey);
+  }
 
   Map<String, String> get headers => {
     if (_authToken != null) 'Authorization': 'Bearer $_authToken',
     'Content-Type': 'application/json',
   };
 
-  void setAuthToken(String token) {
+  Future<void> setAuthToken(String token) async {
     _authToken = token;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
   }
 
-  void clearAuthToken() {
+  Future<void> clearAuthToken() async {
     _authToken = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
   }
 
   Future<http.Response> get(String endpoint) async {

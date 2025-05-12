@@ -35,7 +35,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final data = json.decode(response.body);
 
       if (response.statusCode == 200) {
-        _apiClient.setAuthToken(data['token']);
+        await _apiClient.setAuthToken(data['token']);
         return data;
       } else {
         throw AuthException(data['message'] ?? 'Failed to login');
@@ -66,7 +66,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final data = json.decode(response.body);
 
       if (response.statusCode == 201) {
-        _apiClient.setAuthToken(data['token']);
+        await _apiClient.setAuthToken(data['token']);
         return data;
       } else {
         throw AuthException(data['message'] ?? 'Failed to register');
@@ -78,7 +78,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> logout() async {
-    _apiClient.clearAuthToken();
+    await _apiClient.clearAuthToken();
   }
 
   @override
