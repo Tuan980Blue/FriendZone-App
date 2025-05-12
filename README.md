@@ -13,6 +13,12 @@ Người dùng có thể nhắn tin, tương tác, và cập nhật trạng thá
 
 ---
 
+## 📸 Giao diện minh hoạ *(tuỳ chọn)*
+
+![image](https://github.com/user-attachments/assets/e8102a0d-185e-46ce-b177-9fda9430db1f)
+
+---
+
 ## 🚀 Tính năng nổi bật
 
 - 📝 <span style="font-size:16px"><strong>Đăng bài viết:</strong></span> Chia sẻ nội dung cá nhân một cách dễ dàng.  
@@ -62,12 +68,6 @@ Người dùng có thể nhắn tin, tương tác, và cập nhật trạng thá
 ### 🧠 **D – Dependency Inversion Principle**
 - Use Case chỉ phụ thuộc vào abstraction (interface).
 - Dùng dependency injection qua constructor và `get_it`.
-
----
-
-## 📸 Giao diện minh hoạ *(tuỳ chọn)*
-
-![image](https://github.com/user-attachments/assets/2daed7db-9798-4ceb-987c-3b42737b20a8)
 
 ---
 
