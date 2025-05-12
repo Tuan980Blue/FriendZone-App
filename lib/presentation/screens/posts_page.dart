@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/usecases/posts/get_posts_usecase.dart';
 import '../widgets/post_card.dart';
-import '../widgets/create_post_widget.dart';
+import '../widgets/create_post.dart';
 
 class PostsPage extends StatefulWidget {
   final GetPostsUseCase getPostsUseCase;
