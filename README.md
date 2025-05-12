@@ -67,7 +67,7 @@ Người dùng có thể nhắn tin, tương tác, và cập nhật trạng thá
 
 ## 📸 Giao diện minh hoạ *(tuỳ chọn)*
 
-> Bạn có thể thêm ảnh màn hình ứng dụng tại đây để làm nổi bật trải nghiệm người dùng.
+![image](https://github.com/user-attachments/assets/2daed7db-9798-4ceb-987c-3b42737b20a8)
 
 ---
 
