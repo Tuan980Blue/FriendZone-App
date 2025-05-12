@@ -14,6 +14,8 @@ import '../domain/usecases/auth/register_usecase.dart';
 import '../domain/usecases/auth/get_current_user_usecase.dart';
 import '../domain/usecases/auth/logout_usecase.dart';
 import '../domain/usecases/posts/get_posts_usecase.dart';
+import '../domain/usecases/posts/create_post_usecase.dart';
+import '../domain/usecases/posts/upload_image_usecase.dart';
 import '../domain/usecases/users/get_user_suggestions_usecase.dart';
 
 final sl = GetIt.instance;
@@ -45,10 +47,17 @@ Future<void> init() async {
   );
 
   // Use cases
+  // Auth use cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => RegisterUseCase(sl()));
   sl.registerLazySingleton(() => GetCurrentUserUseCase(sl()));
   sl.registerLazySingleton(() => LogoutUseCase(sl()));
+
+  // Post use cases
   sl.registerLazySingleton(() => GetPostsUseCase(sl()));
+  sl.registerLazySingleton(() => CreatePostUseCase(sl()));
+  sl.registerLazySingleton(() => UploadImageUseCase(sl()));
+
+  // User use cases
   sl.registerLazySingleton(() => GetUserSuggestionsUseCase(sl()));
 } 
