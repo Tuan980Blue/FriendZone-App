@@ -14,7 +14,7 @@
 ## 🧱 Công nghệ sử dụng
 
 - **Backend**: Node.js, Express.js, WebSocket (ws/socket.io)
-- **Frontend**: React / NextJs
+- **Frontend**: Flutter
 - **Database**: MongoDB 
 - **Auth**: JWT 
 - **Realtime Layer**: Socket.IO / ws / WebSocket API
