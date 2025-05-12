@@ -15,7 +15,9 @@ Người dùng có thể nhắn tin, tương tác, và cập nhật trạng thá
 
 ## 📸 Giao diện minh hoạ *(tuỳ chọn)*
 
-![image](https://github.com/user-attachments/assets/e8102a0d-185e-46ce-b177-9fda9430db1f)
+<img src="https://github.com/user-attachments/assets/da070465-89f6-4455-b4b4-753fccac89dd" alt="Screenshot_20250512_171314" width="400"/>
+
+
 
 ---
 
