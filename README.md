@@ -1,68 +1,85 @@
-### 🌐 [Link-PreView-Version-Web](https://anhtuandev.id.vn/)
+<h1 align="center">🌟 FriendZone App 🌟</h1>
 
-**FriendZone** là một nền tảng mạng xã hội lấy cảm hứng từ **Instagram**, phần mềm thời gian thực được xây dựng với WebSocket, nơi người dùng có thể nhắn tin, tương tác và cập nhật trạng thái ngay lập tức – không cần F5!
+<p align="center">
+  <a href="https://anhtuandev.id.vn/" target="_blank"><strong>🔗 Xem bản demo web tại đây</strong></a>
+</p>
+
+---
+
+## 🧾 Giới thiệu
+
+**FriendZone** là một ứng dụng mạng xã hội **thời gian thực** lấy cảm hứng từ *Instagram*.  
+Người dùng có thể nhắn tin, tương tác, và cập nhật trạng thái ngay **lập tức** nhờ vào WebSocket — **không cần F5!**
+
+---
+
+## 📸 Giao diện minh hoạ *(tuỳ chọn)*
+
+<img src="https://github.com/user-attachments/assets/da070465-89f6-4455-b4b4-753fccac89dd" alt="Screenshot_20250512_171314" width="200"/>
+
+
+
+---
 
 ## 🚀 Tính năng nổi bật
 
-- 🔥 **Giao tiếp thời gian thực** – Tin nhắn, phản hồi, và thông báo được cập nhật ngay lập tức nhờ WebSocket.
-- 👥 **Phòng chat riêng và nhóm** – Giao tiếp 1-1 hoặc theo nhóm cực kỳ mượt mà.
-- 📡 **Trạng thái người dùng** – Ai đang online/offline?.
-- 📝 **Cập nhật trạng thái** – Chia sẻ cảm xúc, hình ảnh, hay bất cứ điều gì bạn muốn.
-- 🔒 **Xác thực người dùng** – Bảo mật bằng JWT.
-- 📱 **Responsive UI** – Giao diện đẹp, mượt mà trên mọi thiết bị.
+- 📝 <span style="font-size:16px"><strong>Đăng bài viết:</strong></span> Chia sẻ nội dung cá nhân một cách dễ dàng.  
+- ❤️ <strong>Tương tác bài đăng:</strong> Like, bình luận và kết nối với bạn bè.  
+- 🔥 <strong>Giao tiếp thời gian thực:</strong> Tin nhắn & thông báo được cập nhật ngay lập tức qua WebSocket.  
+- 💬 <strong>Phòng chat riêng & nhóm:</strong> Giao tiếp 1-1 hoặc theo nhóm cực kỳ mượt mà.  
+- 🟢 <strong>Trạng thái người dùng:</strong> Biết ngay ai đang online/offline.  
+- 📸 <strong>Cập nhật trạng thái:</strong> Chia sẻ cảm xúc, hình ảnh, hoặc bất kỳ điều gì bạn muốn.  
+- 🔐 <strong>Xác thực người dùng:</strong> Bảo mật an toàn bằng JWT.  
+- 📱 <strong>Responsive UI:</strong> Giao diện mượt mà, tương thích trên mọi thiết bị.
+
+---
 
 ## 🧱 Công nghệ sử dụng
 
-- **Backend**: Node.js, Express.js, WebSocket (ws/socket.io)
-- **Frontend**: Flutter
-- **Database**: MongoDB 
-- **Auth**: JWT 
-- **Realtime Layer**: Socket.IO / ws / WebSocket API
+| 💡 Thành phần    | ⚙️ Công nghệ                                           |
+|------------------|--------------------------------------------------------|
+| **Backend**      | Node.js, Express.js, WebSocket (`ws` / `socket.io`)    |
+| **Frontend**     | Flutter                                                |
+| **Database**     | MongoDB                                                |
+| **Authentication** | JWT                                                 |
+| **Realtime Layer** | Socket.IO / WebSocket API                            |
 
-### 🚀 Work Follow Chat Online
-![workfollow-Chat](https://github.com/user-attachments/assets/9dbb4cc1-0bde-463e-97c5-f9b32ab46fa0)
-![workfollow-Chat](https://github.com/user-attachments/assets/e1d02694-4fde-4e6b-bf35-c291943c1e63)
+---
 
-### 🚀 📝 State Message Chat Online
-![workfollow-Chat](https://github.com/user-attachments/assets/c97715b3-7fc4-4d6e-a249-cc71f7a6d852)
+## 📐 Áp dụng nguyên lý SOLID
 
-## setup cho dự án :
-Frontend: Deploy trên Vercel
-Có CI/CD tự động
-Backend: Deploy trên Render
-Hỗ trợ WebSocket tốt
-Dễ dàng kết nối với MongoDB
-Có SSL miễn phí
-Database: Sử dụng MongoDB
-Ổn định và đáng tin cậy
-Dễ dàng backup và restore
-Có monitoring tools
-WebSocket: Có 2 lựa chọn:
-Sử dụng WebSocket trực tiếp từ backend (nếu deploy trên Render)
+> *Dự án tuân thủ đầy đủ các nguyên tắc SOLID để mã nguồn sạch, rõ ràng và dễ mở rộng.*
 
-## Cơ chế
-Tạo tin nhắn tạm thời ngay khi người dùng gửi:
-Tạo một tempMessage với đầy đủ thông tin (ID, nội dung, người gửi, người nhận, thời gian)
-Sử dụng timestamp làm ID tạm thời
-Thêm thông tin người gửi và người nhận từ state hiện tại
-Cập nhật state ngay lập tức:
-Thêm tin nhắn vào messages state để hiển thị ngay
-Cập nhật chats state để hiển thị tin nhắn mới nhất trong danh sách chat
-Gửi tin nhắn qua WebSocket:
-Sau khi cập nhật UI, gửi tin nhắn qua WebSocket
-Nếu có lỗi, có thể thêm logic để xóa tin nhắn tạm thời
-Thêm kiểm tra user:
-Kiểm tra user tồn tại trước khi gửi tin nhắn
-Thêm user vào dependencies của useCallback
-Cách này sẽ giúp:
-Tin nhắn hiển thị ngay lập tức khi gửi
-Người dùng thấy được tin nhắn của mình ngay lập tức
-Vẫn đảm bảo tin nhắn được gửi qua WebSocket
-Có thể xử lý lỗi nếu gửi thất bại
+### 🧩 **S – Single Responsibility Principle**
+- Mỗi repository chỉ chịu trách nhiệm một domain: `Auth`, `Post`, `User`.
+- Mỗi Use Case thực hiện đúng một nhiệm vụ: `Login`, `Register`, `GetPosts`...
+- Các Data Source được tách riêng: `AuthRemoteDataSource`, `PostRemoteDataSource`.
 
-## 
-WebSocket: Giao thức kết nối hai chiều, cho phép server gửi dữ liệu đến client mà không cần client yêu cầu.
-Quản lý kết nối: Server biết người dùng nào đang online và có thể gửi tin nhắn đến họ ngay lập tức.
-Optimistic UI: Client hiển thị tin nhắn ngay lập tức, không cần đợi phản hồi từ server.
-Xử lý sự kiện: Client đăng ký handler cho sự kiện receive_message để cập nhật UI khi nhận được tin nhắn mới.
-Đây là một thiết kế tốt cho hệ thống chat real-time, cho phép tin nhắn được gửi và nhận ngay lập tức, đồng thời đảm bảo độ tin cậy và khả năng mở rộng.
+### 🧱 **O – Open/Closed Principle**
+- Repository xây dựng dưới dạng abstract class.
+- Có thể mở rộng repository mà không cần chỉnh sửa code cũ.
+- `UseCase` kế thừa `UseCase<Type, Params>` để dễ dàng mở rộng.
+
+### 🔁 **L – Liskov Substitution Principle**
+- Implementation như `AuthRepositoryImpl` có thể thay thế interface của nó mà không làm thay đổi hành vi.
+
+### 🔍 **I – Interface Segregation Principle**
+- Interface được chia nhỏ theo domain: `AuthRepository`, `PostRepository`, `UserRepository`.
+- Không ép buộc các implementation chứa những phương thức không dùng đến.
+
+### 🧠 **D – Dependency Inversion Principle**
+- Use Case chỉ phụ thuộc vào abstraction (interface).
+- Dùng dependency injection qua constructor và `get_it`.
+
+---
+
+## 👤 Tác giả
+
+- 💼 Website: [anhtuandev.id.vn](https://tuananhhuflit.id.vn/)
+- 📧 Email: anhtuan21jr@gmail.com
+
+---
+
+<p align="center">
+  ⭐️ Cảm ơn bạn đã ghé thăm! Nếu thấy hữu ích, hãy để lại một ⭐️ nhé!
+</p>
