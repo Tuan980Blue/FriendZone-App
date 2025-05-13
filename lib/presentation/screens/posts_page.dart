@@ -85,10 +85,6 @@ class _PostsPageState extends State<PostsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Posts'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
       body: RefreshIndicator(
         onRefresh: () async {
           _refreshPosts();

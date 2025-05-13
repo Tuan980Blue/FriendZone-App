@@ -3,6 +3,7 @@ import 'package:friendzoneapp/presentation/screens/posts_page.dart';
 import 'package:friendzoneapp/presentation/screens/profile_screen.dart';
 import 'package:friendzoneapp/presentation/screens/user_suggestions_page.dart';
 import 'package:friendzoneapp/presentation/widgets/bottom_nav_bar.dart';
+import 'package:friendzoneapp/presentation/widgets/app_bar.dart';
 import '../../di/injection_container.dart';
 import '../../domain/usecases/posts/get_posts_usecase.dart';
 import '../../domain/usecases/users/get_user_suggestions_usecase.dart';
@@ -44,6 +45,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: _selectedIndex == 0 ? const CustomAppBar() : null,
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedIndex,
