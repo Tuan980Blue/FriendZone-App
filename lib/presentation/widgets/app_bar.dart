@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar({super.key});
+  final Function(int)? onTabChanged;
+  final int selectedIndex;
+
+  const CustomAppBar({
+    super.key,
+    this.onTabChanged,
+    this.selectedIndex = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,24 +29,48 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           Row(
             children: [
               // Notification icon
-              IconButton(
-                icon: const Icon(
-                  Icons.notifications_none,
-                  color: AppTheme.textPrimary,
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: selectedIndex == 2 
+                      ? AppTheme.accentPink.withOpacity(0.1)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                onPressed: () {
-                  // TODO: Implement notification functionality
-                },
+                child: IconButton(
+                  icon: Icon(
+                    Icons.notifications_none,
+                    color: selectedIndex == 2 
+                        ? AppTheme.accentPink
+                        : AppTheme.textPrimary,
+                  ),
+                  onPressed: () {
+                    // Chuyển đến tab notifications (index 2)
+                    onTabChanged?.call(2);
+                  },
+                ),
               ),
+              const SizedBox(width: 4),
               // Message icon
-              IconButton(
-                icon: const Icon(
-                  Icons.chat_bubble_outline,
-                  color: AppTheme.textPrimary,
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: selectedIndex == 3 
+                      ? AppTheme.accentPink.withOpacity(0.1)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                onPressed: () {
-                  // TODO: Implement message functionality
-                },
+                child: IconButton(
+                  icon: Icon(
+                    Icons.chat_bubble_outline,
+                    color: selectedIndex == 3 
+                        ? AppTheme.accentPink
+                        : AppTheme.textPrimary,
+                  ),
+                  onPressed: () {
+                    // TODO: Implement message functionality
+                  },
+                ),
               ),
             ],
           ),
