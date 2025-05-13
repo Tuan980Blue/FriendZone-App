@@ -11,6 +11,7 @@ abstract class AuthRemoteDataSource {
     required String password,
     required String username,
     required String fullName,
+    required String birthDate,
   });
   Future<void> logout();
   Future<UserModel> getCurrentUser();
@@ -51,6 +52,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
     required String username,
     required String fullName,
+    required String birthDate,
   }) async {
     try {
       final response = await _apiClient.post(
@@ -60,6 +62,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'password': password,
           'username': username,
           'fullName': fullName,
+          'birthDate': birthDate,
         },
       );
 

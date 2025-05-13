@@ -22,8 +22,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _usernameController = TextEditingController();
   final _fullNameController = TextEditingController();
+  DateTime? _selectedDate;
   bool _isLoading = false;
   String _error = '';
   bool _obscurePassword = true;
@@ -51,14 +51,54 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _usernameController.dispose();
     _fullNameController.dispose();
     _animationController.dispose();
     super.dispose();
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppTheme.primaryBlue,
+              onPrimary: Colors.white,
+              surface: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF2A2A2A)
+                  : Colors.white,
+              onSurface: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return "${date.toIso8601String()}";
+  }
+
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedDate == null) {
+      setState(() {
+        _error = 'Please select your birth date';
+      });
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -66,11 +106,15 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     });
 
     try {
+      final email = _emailController.text.trim();
+      final username = email.split('@')[0];
+
       await widget.registerUseCase(
-        email: _emailController.text.trim(),
+        email: email,
         password: _passwordController.text,
-        username: _usernameController.text.trim(),
+        username: username,
         fullName: _fullNameController.text.trim(),
+        birthDate: _formatDate(_selectedDate!),
       );
 
       if (!mounted) return;
@@ -194,6 +238,44 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           ),
                           const SizedBox(height: 32),
 
+
+
+                          // Full name field with custom styling
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.primaryBlue.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            child: TextFormField(
+                              controller: _fullNameController,
+                              decoration: InputDecoration(
+                                labelText: 'Full Name',
+                                prefixIcon: Icon(Icons.person_outline, color: AppTheme.primaryBlue),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                                filled: true,
+                                fillColor: Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFF2A2A2A)
+                                    : Colors.white,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your full name';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
                           // Email field with custom styling
                           Container(
                             decoration: BoxDecoration(
@@ -234,7 +316,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                           ),
                           const SizedBox(height: 16),
 
-                          // Full name field with custom styling
+                          // Birth Date field with custom styling
                           Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
@@ -246,65 +328,31 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                 ),
                               ],
                             ),
-                            child: TextFormField(
-                              controller: _fullNameController,
-                              decoration: InputDecoration(
-                                labelText: 'Full Name',
-                                prefixIcon: Icon(Icons.person_outline, color: AppTheme.primaryBlue),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
+                            child: InkWell(
+                              onTap: () => _selectDate(context),
+                              child: InputDecorator(
+                                decoration: InputDecoration(
+                                  prefixIcon: Icon(Icons.calendar_today_outlined, color: AppTheme.primaryBlue),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  filled: true,
+                                  fillColor: Theme.of(context).brightness == Brightness.dark
+                                      ? const Color(0xFF2A2A2A)
+                                      : Colors.white,
                                 ),
-                                filled: true,
-                                fillColor: Theme.of(context).brightness == Brightness.dark
-                                    ? const Color(0xFF2A2A2A)
-                                    : Colors.white,
+                                child: Text(
+                                  _selectedDate == null
+                                      ? 'Select your birth date'
+                                      : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                                  style: TextStyle(
+                                    color: _selectedDate == null
+                                        ? Theme.of(context).hintColor
+                                        : Theme.of(context).textTheme.bodyLarge?.color,
+                                  ),
+                                ),
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your full name';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Username field with custom styling
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primaryBlue.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                            child: TextFormField(
-                              controller: _usernameController,
-                              decoration: InputDecoration(
-                                labelText: 'Username',
-                                prefixIcon: Icon(Icons.account_circle_outlined, color: AppTheme.primaryBlue),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                                filled: true,
-                                fillColor: Theme.of(context).brightness == Brightness.dark
-                                    ? const Color(0xFF2A2A2A)
-                                    : Colors.white,
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a username';
-                                }
-                                if (value.length < 3) {
-                                  return 'Username must be at least 3 characters';
-                                }
-                                return null;
-                              },
                             ),
                           ),
                           const SizedBox(height: 16),
