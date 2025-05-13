@@ -22,6 +22,19 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<User> getUserById(String userId) async {
+    try {
+      final response = await _remoteDataSource.getUserById(userId);
+      if (response['user'] != null) {
+        return User.fromJson(response['user']);
+      }
+      throw Exception('User not found');
+    } catch (e) {
+      throw Exception('Failed to get user: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<void> followUser(String userId) async {
     await _remoteDataSource.followUser(userId);
   }

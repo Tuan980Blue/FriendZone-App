@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/post.dart';
+import '../../domain/usecases/user/get_user_by_id_usecase.dart';
+import '../../domain/usecases/auth/get_current_user_usecase.dart';
+import '../../domain/usecases/auth/logout_usecase.dart';
+import '../screens/profile_screen.dart';
+import '../../di/injection_container.dart';
 
 class PostCard extends StatelessWidget {
   final Post post;
@@ -16,6 +21,20 @@ class PostCard extends StatelessWidget {
     this.onShare,
   }) : super(key: key);
 
+  void _navigateToUserProfile(BuildContext context, String userId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileScreen(
+          getCurrentUserUseCase: sl<GetCurrentUserUseCase>(),
+          logoutUseCase: sl<LogoutUseCase>(),
+          getUserByIdUseCase: sl<GetUserByIdUseCase>(),
+          userId: userId,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -24,23 +43,32 @@ class PostCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            leading: CircleAvatar(
-              backgroundImage: post.author.avatar != null && post.author.avatar!.isNotEmpty
-                  ? CachedNetworkImageProvider(post.author.avatar!)
-                  : null,
-              child: post.author.avatar == null || post.author.avatar!.isEmpty
-                  ? Text(post.author.fullName.isNotEmpty 
-                      ? post.author.fullName[0].toUpperCase() 
-                      : '?')
-                  : null,
+            leading: GestureDetector(
+              onTap: () => _navigateToUserProfile(context, post.author.id),
+              child: CircleAvatar(
+                backgroundImage: post.author.avatar != null && post.author.avatar!.isNotEmpty
+                    ? CachedNetworkImageProvider(post.author.avatar!)
+                    : null,
+                child: post.author.avatar == null || post.author.avatar!.isEmpty
+                    ? Text(post.author.fullName.isNotEmpty 
+                        ? post.author.fullName[0].toUpperCase() 
+                        : '?')
+                    : null,
+              ),
             ),
-            title: Text(
-              post.author.fullName.isNotEmpty 
-                  ? post.author.fullName 
-                  : 'Unknown User',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            title: GestureDetector(
+              onTap: () => _navigateToUserProfile(context, post.author.id),
+              child: Text(
+                post.author.fullName.isNotEmpty 
+                    ? post.author.fullName 
+                    : 'Unknown User',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-            subtitle: Text('@${post.author.username.isNotEmpty ? post.author.username : 'unknown'}'),
+            subtitle: GestureDetector(
+              onTap: () => _navigateToUserProfile(context, post.author.id),
+              child: Text('@${post.author.username.isNotEmpty ? post.author.username : 'unknown'}'),
+            ),
             trailing: IconButton(
               icon: const Icon(Icons.more_vert),
               onPressed: () {

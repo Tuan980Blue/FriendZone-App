@@ -7,6 +7,7 @@ import '../../models/user_model.dart';
 abstract class UserRemoteDataSource {
   Future<Map<String, dynamic>> fetchUserSuggestions();
   Future<UserModel> getCurrentUser();
+  Future<Map<String, dynamic>> getUserById(String userId);
   Future<void> followUser(String userId);
   Future<void> unfollowUser(String userId);
 }
@@ -41,6 +42,22 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         return UserModel.fromJson(data['user']);
       } else {
         throw AuthException(data['message'] ?? 'Failed to get user profile');
+      }
+    } catch (e) {
+      throw ServerException('Network error occurred: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getUserById(String userId) async {
+    try {
+      final response = await _apiClient.get('${ApiConstants.usersEndpoint}/$userId');
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        return data;
+      } else {
+        throw ServerException(data['message'] ?? 'Failed to get user profile');
       }
     } catch (e) {
       throw ServerException('Network error occurred: $e');

@@ -11,6 +11,9 @@ class ApiConstants {
   static const String postsEndpoint = '/posts';
   static const String userSuggestionsEndpoint = '/follows/suggestions';
   
+  // User endpoints
+  static const String usersEndpoint = '/users';
+  
   // Follow endpoints
   static const String followEndpoint = '/follows';
 } 
