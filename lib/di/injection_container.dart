@@ -17,6 +17,7 @@ import '../domain/usecases/posts/get_posts_usecase.dart';
 import '../domain/usecases/posts/create_post_usecase.dart';
 import '../domain/usecases/posts/upload_image_usecase.dart';
 import '../domain/usecases/users/get_user_suggestions_usecase.dart';
+import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 
 final sl = GetIt.instance;
 
@@ -60,4 +61,5 @@ Future<void> init() async {
 
   // User use cases
   sl.registerLazySingleton(() => GetUserSuggestionsUseCase(sl()));
+  sl.registerLazySingleton(() => GetUserByIdUseCase(sl()));
 } 

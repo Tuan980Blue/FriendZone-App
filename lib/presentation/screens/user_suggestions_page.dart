@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../domain/usecases/users/get_user_suggestions_usecase.dart';
+import '../../domain/usecases/user/get_user_by_id_usecase.dart';
+import '../../domain/usecases/auth/get_current_user_usecase.dart';
+import '../../domain/usecases/auth/logout_usecase.dart';
 import '../widgets/user_card.dart';
+import 'profile_screen.dart';
+import '../../di/injection_container.dart';
 
 class UserSuggestionsPage extends StatefulWidget {
   final GetUserSuggestionsUseCase getUserSuggestionsUseCase;
@@ -19,6 +24,9 @@ class _UserSuggestionsPageState extends State<UserSuggestionsPage> {
   bool isLoading = true;
   String error = '';
   final ScrollController _scrollController = ScrollController();
+  final GetUserByIdUseCase _getUserByIdUseCase = sl<GetUserByIdUseCase>();
+  final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
+  final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
 
   @override
   void initState() {
@@ -58,6 +66,20 @@ class _UserSuggestionsPageState extends State<UserSuggestionsPage> {
     }
   }
 
+  void _navigateToUserProfile(String userId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileScreen(
+          getCurrentUserUseCase: _getCurrentUserUseCase,
+          logoutUseCase: _logoutUseCase,
+          getUserByIdUseCase: _getUserByIdUseCase,
+          userId: userId,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,15 +116,18 @@ class _UserSuggestionsPageState extends State<UserSuggestionsPage> {
                     addRepaintBoundaries: false,
                     itemBuilder: (context, index) {
                       final user = users[index];
-                      return UserCard(
-                        user: user,
-                        onFollowPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Follow functionality coming soon!'),
-                            ),
-                          );
-                        },
+                      return GestureDetector(
+                        onTap: () => _navigateToUserProfile(user['id']),
+                        child: UserCard(
+                          user: user,
+                          onFollowPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Follow functionality coming soon!'),
+                              ),
+                            );
+                          },
+                        ),
                       );
                     },
                   ),

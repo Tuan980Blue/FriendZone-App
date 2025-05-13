@@ -3,17 +3,22 @@ import '../../domain/entities/user.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
+import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import 'login_screen.dart';
 import '../../di/injection_container.dart';
 
 class ProfileScreen extends StatefulWidget {
   final GetCurrentUserUseCase getCurrentUserUseCase;
   final LogoutUseCase logoutUseCase;
+  final GetUserByIdUseCase getUserByIdUseCase;
+  final String? userId; // null means current user's profile
 
   const ProfileScreen({
     super.key,
     required this.getCurrentUserUseCase,
     required this.logoutUseCase,
+    required this.getUserByIdUseCase,
+    this.userId,
   });
 
   @override
@@ -22,9 +27,16 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   User? _user;
+  User? _currentUser;
   bool _isLoading = true;
   String _error = '';
   final LoginUseCase _loginUseCase = sl<LoginUseCase>();
+
+  // Kiểm tra xem đang xem profile của chính mình hay không
+  bool get isViewingOwnProfile {
+    if (_currentUser == null || _user == null) return false;
+    return _currentUser!.id == _user!.id;
+  }
 
   @override
   void initState() {
@@ -33,10 +45,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserProfile() async {
+    setState(() {
+      _isLoading = true;
+      _error = '';
+    });
+
     try {
-      final user = await widget.getCurrentUserUseCase();
+      // Luôn lấy thông tin user hiện tại trước
+      _currentUser = await widget.getCurrentUserUseCase();
+
+      // Sau đó mới lấy thông tin profile cần xem
+      if (widget.userId == null || widget.userId == _currentUser!.id) {
+        // Nếu là profile của chính mình
+        _user = _currentUser;
+      } else {
+        // Nếu là profile của người khác
+        _user = await widget.getUserByIdUseCase(widget.userId!);
+      }
+
       setState(() {
-        _user = user;
         _isLoading = false;
       });
     } catch (e) {
@@ -48,6 +75,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _handleLogout() async {
+    if (!isViewingOwnProfile) return; // Chỉ cho phép logout từ profile của chính mình
+    
     try {
       await widget.logoutUseCase();
       if (!mounted) return;
@@ -75,12 +104,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text(isViewingOwnProfile ? 'My Profile' : 'Profile'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _handleLogout,
-          ),
+          if (isViewingOwnProfile)
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: _handleLogout,
+            ),
         ],
       ),
       body: _isLoading
@@ -133,6 +163,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
                             ],
+                            if (!isViewingOwnProfile && _user != null) ...[
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      // TODO: Implement follow/unfollow
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Follow functionality coming soon!'),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(_user!.isFollowing ? 'Unfollow' : 'Follow'),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  OutlinedButton(
+                                    onPressed: () {
+                                      // TODO: Implement message
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Message functionality coming soon!'),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text('Message'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (isViewingOwnProfile) ...[
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  // TODO: Implement edit profile
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Edit profile functionality coming soon!'),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.edit),
+                                label: const Text('Edit Profile'),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -161,32 +237,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
 
                       // Contact Info
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Contact Information',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 16),
-                              _buildInfoRow(
-                                Icons.email,
-                                'Email',
-                                _user?.email ?? '',
-                              ),
-                              const SizedBox(height: 8),
-                              _buildInfoRow(
-                                Icons.person,
-                                'Username',
-                                _user?.username ?? '',
-                              ),
-                            ],
+                      if (isViewingOwnProfile || !_user!.isPrivate) // Chỉ hiện thông tin liên hệ cho profile của mình hoặc profile public
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Contact Information',
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 16),
+                                if (isViewingOwnProfile || _user!.email != null)
+                                  _buildInfoRow(
+                                    Icons.email,
+                                    'Email',
+                                    _user?.email ?? '',
+                                  ),
+                                const SizedBox(height: 8),
+                                _buildInfoRow(
+                                  Icons.person,
+                                  'Username',
+                                  _user?.username ?? '',
+                                ),
+                                if (_user?.location != null) ...[
+                                  const SizedBox(height: 8),
+                                  _buildInfoRow(
+                                    Icons.location_on,
+                                    'Location',
+                                    _user!.location!,
+                                  ),
+                                ],
+                                if (_user?.website != null) ...[
+                                  const SizedBox(height: 8),
+                                  _buildInfoRow(
+                                    Icons.link,
+                                    'Website',
+                                    _user!.website!,
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
