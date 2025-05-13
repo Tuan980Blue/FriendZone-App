@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../blocs/notification/notification_bloc.dart';
-import '../../domain/entities/notification.dart';
 import '../../core/constants/app_constants.dart';
-import '../theme/app_theme.dart';
 import '../widgets/notification_item.dart';
 
 class NotificationsScreen extends StatefulWidget {
