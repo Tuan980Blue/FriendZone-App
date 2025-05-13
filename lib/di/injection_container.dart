@@ -18,6 +18,11 @@ import '../domain/usecases/posts/create_post_usecase.dart';
 import '../domain/usecases/posts/upload_image_usecase.dart';
 import '../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
+import '../data/datasources/remote/notification_remote_data_source.dart';
+import '../data/repositories/notification_repository_impl.dart';
+import '../domain/repositories/notification_repository.dart';
+import '../domain/usecases/notify/get_notifications_usecase.dart';
+import '../presentation/blocs/notification/notification_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -35,6 +40,9 @@ Future<void> init() async {
   sl.registerLazySingleton<UserRemoteDataSource>(
     () => UserRemoteDataSourceImpl(sl()),
   );
+  sl.registerLazySingleton<NotificationRemoteDataSource>(
+    () => NotificationRemoteDataSourceImpl(apiClient: sl()),
+  );
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
@@ -45,6 +53,9 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<UserRepository>(
     () => UserRepositoryImpl(sl()),
+  );
+  sl.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(remoteDataSource: sl()),
   );
 
   // Use cases
@@ -62,4 +73,12 @@ Future<void> init() async {
   // User use cases
   sl.registerLazySingleton(() => GetUserSuggestionsUseCase(sl()));
   sl.registerLazySingleton(() => GetUserByIdUseCase(sl()));
+
+  // Notification use cases
+  sl.registerLazySingleton(() => GetNotificationsUseCase(sl()));
+
+  // BLoCs
+  sl.registerFactory(
+    () => NotificationBloc(repository: sl()),
+  );
 } 
