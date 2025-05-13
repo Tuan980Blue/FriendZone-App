@@ -21,7 +21,7 @@ import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../data/datasources/remote/notification_remote_data_source.dart';
 import '../data/repositories/notification_repository_impl.dart';
 import '../domain/repositories/notification_repository.dart';
-import '../domain/usecases/notify/get_notifications_usecase.dart';
+import '../domain/usecases/notifications/get_notifications_usecase.dart';
 import '../presentation/blocs/notification/notification_bloc.dart';
 
 final sl = GetIt.instance;
