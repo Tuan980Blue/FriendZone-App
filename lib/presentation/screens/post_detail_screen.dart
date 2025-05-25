@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:friendzoneapp/presentation/screens/profile_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:friendzoneapp/presentation/widgets/post_likes_dialog.dart';
+import 'package:friendzoneapp/presentation/widgets/post_comments_section.dart';
+
+import '../../di/injection_container.dart';
+import '../../domain/usecases/auth/get_current_user_usecase.dart';
+import '../../domain/usecases/auth/logout_usecase.dart';
+import '../../domain/usecases/user/get_user_by_id_usecase.dart';
+
 
 class PostDetailScreen extends StatefulWidget {
   final String postId;
@@ -14,14 +23,49 @@ class PostDetailScreen extends StatefulWidget {
 }
 
 class _PostDetailScreenState extends State<PostDetailScreen> {
+  final GetUserByIdUseCase _getUserByIdUseCase = sl<GetUserByIdUseCase>();
+  final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
+  final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
+
   Map<String, dynamic>? postData;
   bool isLoading = true;
   String? error;
+  String? authToken;
+  final TextEditingController _commentController = TextEditingController();
+  bool isSubmittingComment = false;
+
+  void _navigateToUserProfile(String userId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileScreen(
+          getCurrentUserUseCase: _getCurrentUserUseCase,
+          logoutUseCase: _logoutUseCase,
+          getUserByIdUseCase: _getUserByIdUseCase,
+          userId: userId,
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
+    _loadAuthToken();
     fetchPost();
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      authToken = prefs.getString('auth_token');
+    });
   }
 
   Future<void> fetchPost() async {
@@ -30,9 +74,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       error = null;
     });
     try {
-      final response = await http.get(Uri.parse(
-        'https://web-socket-friendzone.onrender.com/api/posts/${widget.postId}',
-      ));
+      final headers = {
+        'Content-Type': 'application/json',
+        if (authToken != null) 'Authorization': 'Bearer $authToken',
+      };
+
+      final response = await http.get(
+        Uri.parse('https://web-socket-friendzone.onrender.com/api/posts/${widget.postId}'),
+        headers: headers,
+      );
       if (response.statusCode == 200) {
         final jsonBody = json.decode(response.body);
         if (jsonBody['success'] == true) {
@@ -58,6 +108,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> _showLikesDialog() async {
+    if (authToken == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng đăng nhập để xem danh sách người thích')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => PostLikesDialog(
+        postId: widget.postId,
+        authToken: authToken!,
+        onUserTap: _navigateToUserProfile,
+      ),
+    );
   }
 
   String _formatDate(String? dateStr) {
@@ -109,14 +177,74 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   Widget _buildPostStats() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildStatItem(Icons.remove_red_eye, postData!['viewCount'] ?? 0),
-        _buildStatItem(Icons.favorite, postData!['likeCount'] ?? 0),
-        _buildStatItem(Icons.comment, postData!['commentCount'] ?? 0),
-        _buildStatItem(Icons.share, postData!['shareCount'] ?? 0),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.grey[200]!),
+          bottom: BorderSide(color: Colors.grey[200]!),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _showLikesDialog,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.favorite, size: 20, color: Colors.red[400]),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${postData!['likeCount'] ?? 0} lượt thích',
+                      style: TextStyle(
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.comment, size: 20, color: Colors.blue[400]),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${postData!['commentCount'] ?? 0} bình luận',
+                      style: TextStyle(
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          _buildStatItem(Icons.share, postData!['shareCount'] ?? 0),
+        ],
+      ),
     );
   }
 
@@ -133,86 +261,53 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
-  Widget _buildCommentSection() {
-    final comments = postData!['comments'] as List? ?? [];
-    if (comments.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text('Chưa có bình luận nào'),
-        ),
+  Future<void> _submitComment(String content) async {
+    if (authToken == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng đăng nhập để bình luận')),
       );
+      return;
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Text(
-            'Bình luận (${comments.length})',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: comments.length,
-          itemBuilder: (context, index) {
-            final comment = comments[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundImage: NetworkImage(
-                            comment['author']['avatar'] ?? '',
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                comment['author']['fullName'] ?? '',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                '@${comment['author']['username']}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          _formatDate(comment['createdAt']),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(comment['content'] ?? ''),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
+    setState(() {
+      isSubmittingComment = true;
+    });
+
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      };
+
+      final response = await http.post(
+        Uri.parse('https://web-socket-friendzone.onrender.com/api/posts/${widget.postId}/comments'),
+        headers: headers,
+        body: json.encode({'content': content}),
+      );
+
+      if (response.statusCode == 201) {
+        _commentController.clear();
+        fetchPost(); // Refresh post data to get new comment
+      } else if (response.statusCode == 401) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không thể đăng bình luận')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể đăng bình luận')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSubmittingComment = false;
+        });
+      }
+    }
   }
 
   @override
@@ -249,25 +344,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     // Author info
                                     Row(
                                       children: [
-                                        CircleAvatar(
-                                          radius: 24,
-                                          backgroundImage: postData!['author']?['avatar'] != null
-                                              ? NetworkImage(postData!['author']['avatar'])
-                                              : null,
-                                          child: postData!['author']?['avatar'] == null
-                                              ? const Icon(Icons.person)
-                                              : null,
+                                        GestureDetector(
+                                          onTap: () => _navigateToUserProfile(postData!['authorId']),
+                                          child: CircleAvatar(
+                                            radius: 24,
+                                            backgroundImage: postData!['author']?['avatar'] != null
+                                                ? NetworkImage(postData!['author']['avatar'])
+                                                : null,
+                                            child: postData!['author']?['avatar'] == null
+                                                ? const Icon(Icons.person)
+                                                : null,
+                                          ),
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                postData!['author']?['fullName'] ?? '',
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
+                                              GestureDetector(
+                                                onTap: () => _navigateToUserProfile(postData!['authorId']),
+                                                child: Text(
+                                                  postData!['author']?['fullName'] ?? '',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                  ),
                                                 ),
                                               ),
                                               Text(
@@ -303,7 +404,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     if (postData!['images'] != null && (postData!['images'] as List).isNotEmpty)
                                       Container(
                                         width: double.infinity,
-                                        height: 300, // Fixed height for the image
+                                        height: 300,
                                         margin: const EdgeInsets.only(bottom: 16),
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(12),
@@ -369,9 +470,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               ),
                             ),
                             // Comments section
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: _buildCommentSection(),
+                            PostCommentsSection(
+                              comments: postData!['comments'] ?? [],
+                              onUserTap: _navigateToUserProfile,
+                              onCommentSubmit: _submitComment,
+                              commentController: _commentController,
+                              isSubmitting: isSubmittingComment,
                             ),
                           ],
                         ),
