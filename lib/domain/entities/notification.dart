@@ -19,6 +19,28 @@ class NotificationEntity {
     required this.updatedAt,
   });
 
+  NotificationEntity copyWith({
+    String? id,
+    String? userId,
+    String? type,
+    String? content,
+    Map<String, dynamic>? data,
+    bool? isRead,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return NotificationEntity(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      type: type ?? this.type,
+      content: content ?? this.content,
+      data: data ?? this.data,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   factory NotificationEntity.fromJson(Map<String, dynamic> json) {
     try {
       DateTime createdAt;

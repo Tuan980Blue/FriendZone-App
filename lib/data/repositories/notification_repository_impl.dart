@@ -41,4 +41,9 @@ class NotificationRepositoryImpl implements NotificationRepository {
       throw Exception('Failed to mark all notifications as read: $e');
     }
   }
+
+  @override
+  Future<int> getUnreadCount() async {
+    return await remoteDataSource.getUnreadCount();
+  }
 } 

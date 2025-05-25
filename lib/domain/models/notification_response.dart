@@ -15,6 +15,22 @@ class NotificationResponse {
     required this.totalPages,
   });
 
+  NotificationResponse copyWith({
+    List<NotificationEntity>? notifications,
+    int? total,
+    int? page,
+    int? limit,
+    int? totalPages,
+  }) {
+    return NotificationResponse(
+      notifications: notifications ?? this.notifications,
+      total: total ?? this.total,
+      page: page ?? this.page,
+      limit: limit ?? this.limit,
+      totalPages: totalPages ?? this.totalPages,
+    );
+  }
+
   factory NotificationResponse.fromJson(Map<String, dynamic> json) {
     try {
       final data = json['data'] as Map<String, dynamic>;

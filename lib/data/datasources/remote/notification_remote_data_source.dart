@@ -11,6 +11,7 @@ abstract class NotificationRemoteDataSource {
   });
   Future<void> markAsRead(String notificationId);
   Future<void> markAllAsRead();
+  Future<int> getUnreadCount();
 }
 
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
@@ -70,6 +71,24 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
         final data = json.decode(response.body);
         throw ServerException(data['message'] ?? 'Failed to mark all notifications as read');
       }
+    } catch (e) {
+      throw ServerException('Network error occurred: $e');
+    }
+  }
+
+  @override
+  Future<int> getUnreadCount() async {
+    try {
+      final response = await apiClient.get('/notifications/unread/count');
+
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        if (jsonResponse['success'] == true) {
+          return jsonResponse['data']['count'] as int;
+        }
+        throw ServerException('Failed to get unread count: Server returned success: false');
+      }
+      throw ServerException('Failed to get unread count: ${response.statusCode}');
     } catch (e) {
       throw ServerException('Network error occurred: $e');
     }

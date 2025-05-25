@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../theme/app_theme.dart';
+import '../blocs/notification/notification_bloc.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Function(int)? onTabChanged;
@@ -28,27 +30,71 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           // Action icons
           Row(
             children: [
-              // Notification icon
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                decoration: BoxDecoration(
-                  color: selectedIndex == 2 
-                      ? AppTheme.accentPink.withOpacity(0.1)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.notifications_none,
-                    color: selectedIndex == 2 
-                        ? AppTheme.accentPink
-                        : AppTheme.textPrimary,
-                  ),
-                  onPressed: () {
-                    // Chuyển đến tab notifications (index 2)
-                    onTabChanged?.call(2);
-                  },
-                ),
+              // Notification icon with badge
+              BlocBuilder<NotificationBloc, NotificationState>(
+                builder: (context, state) {
+                  int unreadCount = 0;
+                  if (state is NotificationLoaded) {
+                    unreadCount = state.unreadCount;
+                  }
+
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      color: selectedIndex == 2 
+                          ? AppTheme.accentPink.withOpacity(0.1)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Stack(
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.notifications_none,
+                            color: selectedIndex == 2 
+                                ? AppTheme.accentPink
+                                : AppTheme.textPrimary,
+                          ),
+                          onPressed: () {
+                            // Chuyển đến tab notifications (index 2)
+                            onTabChanged?.call(2);
+                            // Load unread count when navigating to notifications
+                            context.read<NotificationBloc>().add(LoadUnreadCount());
+                          },
+                        ),
+                        if (unreadCount > 0)
+                          Positioned(
+                            right: 8,
+                            top: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentPink,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppTheme.cardLight,
+                                  width: 2,
+                                ),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                unreadCount > 99 ? '99+' : unreadCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
               ),
               const SizedBox(width: 4),
               // Message icon
