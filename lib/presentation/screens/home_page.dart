@@ -43,10 +43,7 @@ class _HomePageState extends State<HomePage> {
     _pages = [
       PostsPage(getPostsUseCase: _getPostsUseCase),
       UserSuggestionsPage(getUserSuggestionsUseCase: _getUserSuggestionsUseCase),
-      BlocProvider<NotificationBloc>(
-        create: (context) => sl<NotificationBloc>(),
-        child: const NotificationsScreen(),
-      ),
+      const NotificationsScreen(),
       ProfileScreen(
         getCurrentUserUseCase: _getCurrentUserUseCase,
         logoutUseCase: _logoutUseCase,
@@ -57,17 +54,20 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _selectedIndex == 0 || _selectedIndex == 2 
-          ? CustomAppBar(
-              onTabChanged: _onTabChanged,
-              selectedIndex: _selectedIndex,
-            ) 
-          : null,
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onTabChanged,
+    return BlocProvider(
+      create: (context) => sl<NotificationBloc>()..add(LoadUnreadCount()),
+      child: Scaffold(
+        appBar: _selectedIndex == 0 || _selectedIndex == 2 
+            ? CustomAppBar(
+                onTabChanged: _onTabChanged,
+                selectedIndex: _selectedIndex,
+              ) 
+            : null,
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: BottomNavBar(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: _onTabChanged,
+        ),
       ),
     );
   }

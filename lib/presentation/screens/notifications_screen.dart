@@ -9,7 +9,7 @@ import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../blocs/notification/notification_bloc.dart';
-import '../../core/constants/app_constants.dart';
+import '../theme/app_theme.dart';
 import '../widgets/notification_item.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -20,19 +20,19 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> with SingleTickerProviderStateMixin {
-  final ScrollController _scrollController = ScrollController();
   final GetUserByIdUseCase _getUserByIdUseCase = sl<GetUserByIdUseCase>();
   final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
   final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
   bool _isLoadingMore = false;
+  bool _hasMorePages = true;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
-    context.read<NotificationBloc>().add(const LoadNotifications());
+    // Load initial notifications with limit 20
+    context.read<NotificationBloc>().add(const LoadNotifications(limit: 20));
     
     _animationController = AnimationController(
       vsync: this,
@@ -46,35 +46,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _loadMoreNotifications();
-    }
-  }
-
   void _loadMoreNotifications() {
-    if (!_isLoadingMore) {
+    if (!_isLoadingMore && _hasMorePages) {
       setState(() => _isLoadingMore = true);
       final currentState = context.read<NotificationBloc>().state;
       if (currentState is NotificationLoaded) {
         final currentPage = currentState.response.page;
         final totalPages = currentState.response.totalPages;
+        
         if (currentPage < totalPages) {
           context.read<NotificationBloc>().add(
-                LoadNotifications(
-                  page: currentPage + 1,
-                  limit: AppConstants.defaultPageSize,
-                ),
-              );
+            LoadNotifications(
+              page: currentPage + 1,
+              limit: 20,
+            ),
+          );
+        } else {
+          setState(() => _hasMorePages = false);
         }
       }
-      setState(() => _isLoadingMore = false);
     }
   }
 
@@ -161,15 +155,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                   label: 'Retry',
                   textColor: Theme.of(context).colorScheme.onError,
                   onPressed: () {
-                    context.read<NotificationBloc>().add(const LoadNotifications());
+                    context.read<NotificationBloc>().add(const LoadNotifications(limit: 20));
                   },
                 ),
               ),
             );
+          } else if (state is NotificationLoaded) {
+            setState(() => _isLoadingMore = false);
+            
+            if (state.response.page >= state.response.totalPages) {
+              setState(() => _hasMorePages = false);
+            }
           }
         },
         builder: (context, state) {
-          if (state is NotificationInitial || state is NotificationLoading) {
+          if (state is NotificationInitial || (state is NotificationLoading && !_isLoadingMore)) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -236,48 +236,81 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
               color: Theme.of(context).colorScheme.primary,
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               onRefresh: () async {
-                context.read<NotificationBloc>().add(const LoadNotifications());
+                setState(() {
+                  _isLoadingMore = false;
+                  _hasMorePages = true;
+                });
+                context.read<NotificationBloc>().add(const LoadNotifications(limit: 20));
               },
               child: FadeTransition(
                 opacity: _fadeAnimation,
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  itemCount: notifications.length + (_isLoadingMore ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == notifications.length) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: CircularProgressIndicator(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      );
-                    }
-
-                    final notification = notifications[index];
-                    return NotificationItem(
-                      notification: notification,
-                      onTap: () {
-                        if (!notification.isRead) {
-                          context.read<NotificationBloc>().add(
-                            MarkNotificationAsRead(notification.id),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        itemCount: notifications.length,
+                        itemBuilder: (context, index) {
+                          final notification = notifications[index];
+                          return NotificationItem(
+                            notification: notification,
+                            onTap: () {
+                              if (!notification.isRead) {
+                                context.read<NotificationBloc>().add(
+                                  MarkNotificationAsRead(notification.id),
+                                );
+                              }
+                              if (notification.type == 'FOLLOW' && 
+                                  notification.followerId != null && 
+                                  notification.followerId!.isNotEmpty) {
+                                _navigateToUserProfile(notification.followerId!);
+                              } else if ((notification.type == 'LIKE' || 
+                                        notification.type == 'COMMENT') && 
+                                        notification.postId != null && 
+                                        notification.postId!.isNotEmpty) {
+                                _navigateToPostDetail(notification.postId!);
+                              }
+                            },
                           );
-                        }
-                        if (notification.type == 'FOLLOW' && 
-                            notification.followerId != null && 
-                            notification.followerId!.isNotEmpty) {
-                          _navigateToUserProfile(notification.followerId!);
-                        } else if ((notification.type == 'LIKE' || 
-                                  notification.type == 'COMMENT') && 
-                                  notification.postId != null && 
-                                  notification.postId!.isNotEmpty) {
-                          _navigateToPostDetail(notification.postId!);
-                        }
-                      },
-                    );
-                  },
+                        },
+                      ),
+                    ),
+                    if (_hasMorePages)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: _isLoadingMore
+                            ? Column(
+                                children: [
+                                  CircularProgressIndicator(
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Loading more...',
+                                    style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : ElevatedButton(
+                                onPressed: _loadMoreNotifications,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.accentPink,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text('Tải thêm'),
+                              ),
+                      ),
+                  ],
                 ),
               ),
             );

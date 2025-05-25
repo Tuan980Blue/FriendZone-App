@@ -1,3 +1,4 @@
+import '../entities/notification.dart';
 import '../models/notification_response.dart';
 
 abstract class NotificationRepository {
@@ -8,4 +9,5 @@ abstract class NotificationRepository {
   
   Future<void> markAsRead(String notificationId);
   Future<void> markAllAsRead();
+  Future<int> getUnreadCount();
 } 
