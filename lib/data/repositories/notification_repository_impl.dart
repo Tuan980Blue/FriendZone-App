@@ -14,21 +14,31 @@ class NotificationRepositoryImpl implements NotificationRepository {
     required int page,
     required int limit,
   }) async {
-    return await remoteDataSource.getNotifications(
-      page: page,
-      limit: limit,
-    );
+    try {
+      return await remoteDataSource.getNotifications(
+        page: page,
+        limit: limit,
+      );
+    } catch (e) {
+      throw Exception('Failed to get notifications: $e');
+    }
   }
 
   @override
   Future<void> markAsRead(String notificationId) async {
-    // TODO: Implement mark as read functionality
-    throw UnimplementedError();
+    try {
+      await remoteDataSource.markAsRead(notificationId);
+    } catch (e) {
+      throw Exception('Failed to mark notification as read: $e');
+    }
   }
 
   @override
   Future<void> markAllAsRead() async {
-    // TODO: Implement mark all as read functionality
-    throw UnimplementedError();
+    try {
+      await remoteDataSource.markAllAsRead();
+    } catch (e) {
+      throw Exception('Failed to mark all notifications as read: $e');
+    }
   }
 } 

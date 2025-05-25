@@ -1,5 +1,6 @@
 import 'dart:convert';
 import '../../../core/network/api_client.dart';
+import '../../../core/errors/exceptions.dart';
 import '../../../domain/entities/notification.dart';
 import '../../../domain/models/notification_response.dart';
 
@@ -8,6 +9,8 @@ abstract class NotificationRemoteDataSource {
     required int page,
     required int limit,
   });
+  Future<void> markAsRead(String notificationId);
+  Future<void> markAllAsRead();
 }
 
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
@@ -22,40 +25,53 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
     required int page,
     required int limit,
   }) async {
-    final response = await apiClient.get('/notifications?page=$page&limit=$limit');
+    try {
+      final response = await apiClient.get('/notifications?page=$page&limit=$limit');
 
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
-      final data = jsonResponse['data'];
-      
-      final notifications = (data['notifications'] as List)
-          .map((json) => NotificationEntity(
-                id: json['id'],
-                userId: json['userId'],
-                type: json['type'],
-                content: json['content'],
-                data: NotificationData(
-                  followerId: json['data']['followerId'],
-                  followerUsername: json['data']['followerUsername'],
-                  followerFullName: json['data']['followerFullName'],
-                  followerAvatar: json['data']['followerAvatar'],
-                  timestamp: DateTime.parse(json['data']['timestamp']),
-                ),
-                isRead: json['isRead'],
-                createdAt: DateTime.parse(json['createdAt']),
-                updatedAt: DateTime.parse(json['updatedAt']),
-              ))
-          .toList();
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        if (jsonResponse['success'] == true) {
+          return NotificationResponse.fromJson(jsonResponse);
+        }
+        throw ServerException('Failed to load notifications: Server returned success: false');
+      }
+      throw ServerException('Failed to load notifications: ${response.statusCode}');
+    } catch (e) {
+      throw ServerException('Network error occurred: $e');
+    }
+  }
 
-      return NotificationResponse(
-        notifications: notifications,
-        total: data['total'],
-        page: data['page'],
-        limit: data['limit'],
-        totalPages: data['totalPages'],
+  @override
+  Future<void> markAsRead(String notificationId) async {
+    try {
+      final response = await apiClient.put(
+        '/notifications/$notificationId/read',
+        body: {},
       );
-    } else {
-      throw Exception('Failed to load notifications');
+
+      if (response.statusCode != 200) {
+        final data = json.decode(response.body);
+        throw ServerException(data['message'] ?? 'Failed to mark notification as read');
+      }
+    } catch (e) {
+      throw ServerException('Network error occurred: $e');
+    }
+  }
+
+  @override
+  Future<void> markAllAsRead() async {
+    try {
+      final response = await apiClient.put(
+        '/notifications/read-all',
+        body: {},
+      );
+
+      if (response.statusCode != 200) {
+        final data = json.decode(response.body);
+        throw ServerException(data['message'] ?? 'Failed to mark all notifications as read');
+      }
+    } catch (e) {
+      throw ServerException('Network error occurred: $e');
     }
   }
 } 

@@ -14,6 +14,39 @@ class NotificationResponse {
     required this.limit,
     required this.totalPages,
   });
+
+  factory NotificationResponse.fromJson(Map<String, dynamic> json) {
+    try {
+      final data = json['data'] as Map<String, dynamic>;
+      final notificationsList = (data['notifications'] as List)
+          .map((item) => NotificationEntity.fromJson(item as Map<String, dynamic>))
+          .toList();
+
+      return NotificationResponse(
+        notifications: notificationsList,
+        total: (data['total'] as num?)?.toInt() ?? 0,
+        page: (data['page'] as num?)?.toInt() ?? 1,
+        limit: (data['limit'] as num?)?.toInt() ?? 20,
+        totalPages: (data['totalPages'] as num?)?.toInt() ?? 1,
+      );
+    } catch (e) {
+      print('Error parsing notification response: $e');
+      print('JSON data: $json');
+      rethrow;
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'data': {
+        'notifications': notifications.map((n) => n.toJson()).toList(),
+        'total': total,
+        'page': page,
+        'limit': limit,
+        'totalPages': totalPages,
+      }
+    };
+  }
 }
 
 class ApiResponse<T> {

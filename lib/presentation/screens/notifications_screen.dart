@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:friendzoneapp/domain/entities/notification.dart';
+import 'package:friendzoneapp/presentation/screens/post_detail_screen.dart';
+import 'package:friendzoneapp/presentation/screens/profile_screen.dart';
 
+import '../../di/injection_container.dart';
+import '../../domain/usecases/auth/get_current_user_usecase.dart';
+import '../../domain/usecases/auth/logout_usecase.dart';
+import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../blocs/notification/notification_bloc.dart';
 import '../../core/constants/app_constants.dart';
 import '../widgets/notification_item.dart';
@@ -14,6 +21,9 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   final ScrollController _scrollController = ScrollController();
+  final GetUserByIdUseCase _getUserByIdUseCase = sl<GetUserByIdUseCase>();
+  final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
+  final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
   bool _isLoadingMore = false;
 
   @override
@@ -54,6 +64,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       }
       setState(() => _isLoadingMore = false);
     }
+  }
+
+  void _navigateToUserProfile(String userId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileScreen(
+          getCurrentUserUseCase: _getCurrentUserUseCase,
+          logoutUseCase: _logoutUseCase,
+          getUserByIdUseCase: _getUserByIdUseCase,
+          userId: userId,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToPostDetail(String postId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostDetailScreen(postId: postId),
+      ),
+    );
   }
 
   @override
@@ -153,8 +186,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     onTap: () {
                       if (!notification.isRead) {
                         context.read<NotificationBloc>().add(
-                              MarkNotificationAsRead(notification.id),
-                            );
+                          MarkNotificationAsRead(notification.id),
+                        );
+                      }
+                      if (notification.type == 'FOLLOW' && notification.followerId != null && notification.followerId!.isNotEmpty) {
+                        _navigateToUserProfile(notification.followerId!);
+                      } else if ((notification.type == 'LIKE' || notification.type == 'COMMENT') && notification.postId != null && notification.postId!.isNotEmpty) {
+                        _navigateToPostDetail(notification.postId!);
                       }
                     },
                   );
