@@ -13,13 +13,16 @@ Người dùng có thể nhắn tin, tương tác, và cập nhật trạng thá
 
 ---
 
-## 📸 Giao diện minh hoạ *(tuỳ chọn)*
+## 📸 Giao diện Minh Hoạ *(Tuỳ chọn)*
 
-<img src="https://github.com/user-attachments/assets/da070465-89f6-4455-b4b4-753fccac89dd" alt="Screenshot_20250512_171314" width="200"/>
-
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/da070465-89f6-4455-b4b4-753fccac89dd" alt="Giao diện 1" width="200"/>
+  <img src="https://github.com/user-attachments/assets/f6d9a9d9-8777-4e7e-872b-3189e6903c96" alt="Giao diện 2" width="200"/>
+</p>
 
 ---
+
+
 
 ## 🚀 Tính năng nổi bật
 
