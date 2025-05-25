@@ -14,19 +14,40 @@ class NotificationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get avatar URL based on notification type
+    String? avatarUrl;
+    String? userId;
+    
+    switch (notification.type) {
+      case 'FOLLOW':
+        avatarUrl = notification.followerAvatar;
+        userId = notification.followerId;
+        break;
+      case 'LIKE':
+        avatarUrl = notification.data['likerAvatar']?.toString();
+        userId = notification.data['likerId']?.toString();
+        break;
+      case 'COMMENT':
+        avatarUrl = notification.data['commenterAvatar']?.toString();
+        userId = notification.data['commenterId']?.toString();
+        break;
+    }
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Hero(
-          tag: 'notification_avatar_${notification.data.followerId}',
+          tag: 'notification_avatar_${userId ?? notification.id}',
           child: CircleAvatar(
             radius: 24,
-            backgroundImage: notification.data.followerAvatar.isNotEmpty
-                ? NetworkImage(notification.data.followerAvatar)
+            backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
+                ? NetworkImage(avatarUrl)
                 : null,
-            onBackgroundImageError: (_, __) {},
-            child: notification.data.followerAvatar.isEmpty
+            onBackgroundImageError: (avatarUrl != null && avatarUrl.isNotEmpty)
+                ? (_, __) {}
+                : null,
+            child: (avatarUrl == null || avatarUrl.isEmpty)
                 ? const Icon(Icons.person, size: 24)
                 : null,
           ),
