@@ -6,6 +6,7 @@ import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import 'login_screen.dart';
 import '../../di/injection_container.dart';
+import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 
 class ProfileScreen extends StatefulWidget {
   final GetCurrentUserUseCase getCurrentUserUseCase;
@@ -84,7 +85,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => LoginScreen(
-            loginUseCase: _loginUseCase,
+            loginUseCase: sl<LoginUseCase>(),
+            googleSignInUseCase: sl<GoogleSignInUseCase>(),
           ),
         ),
         (route) => false,

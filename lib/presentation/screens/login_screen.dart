@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:friendzoneapp/presentation/screens/register_screen.dart';
 import 'package:friendzoneapp/presentation/screens/forgot_password_screen.dart';
+import 'package:friendzoneapp/presentation/screens/google_password_setup_screen.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/register_usecase.dart';
+import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 import '../theme/app_theme.dart';
 import 'home_page.dart';
 import '../../di/injection_container.dart';
 
 class LoginScreen extends StatefulWidget {
   final LoginUseCase loginUseCase;
+  final GoogleSignInUseCase googleSignInUseCase;
 
   const LoginScreen({
     super.key,
     required this.loginUseCase,
+    required this.googleSignInUseCase,
   });
 
   @override
@@ -74,6 +81,83 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } catch (e) {
+      setState(() {
+        _error = e.toString().replaceAll('Exception: ', '');
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+      _error = '';
+    });
+
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+      
+      // Sign out trước để force hiển thị dialog chọn tài khoản
+      await googleSignIn.signOut();
+      
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        setState(() { _isLoading = false; });
+        return;
+      }
+
+      final authHeaders = await googleUser.authHeaders;
+      final authToken = authHeaders['Authorization'];
+      if (authToken == null) {
+        throw Exception('Failed to get Google auth token');
+      }
+      final response = await http.get(
+        Uri.parse('https://www.googleapis.com/oauth2/v3/userinfo'),
+        headers: {'Authorization': authToken},
+      );
+      print('Google userinfo response: ${response.statusCode} - ${response.body}');
+      if (response.statusCode != 200) {
+        throw Exception('Failed to get user info from Google');
+      }
+      final userInfo = jsonDecode(response.body);
+      
+      // Gọi backend và lưu token
+      final result = await widget.googleSignInUseCase(userInfo);
+      print('Backend result: $result');
+
+      // Kiểm tra và lưu token từ backend chỉ khi không requirePassword
+      if (result['requirePassword'] != true && result['token'] == null) {
+        throw Exception('Backend did not return authentication token');
+      }
+
+      if (!mounted) return;
+
+      // Handle the response
+      if (result['requirePassword'] == true) {
+        // New user needs to create password
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => GooglePasswordSetupScreen(
+              userInfo: result['userInfo'],
+              googleSignInUseCase: widget.googleSignInUseCase,
+            ),
+          ),
+        );
+      } else {
+        // Existing user, navigate to home
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      }
+    } catch (e, stack) {
+      print('Google Sign-In error: $e');
+      print('Stack trace: $stack');
       setState(() {
         _error = e.toString().replaceAll('Exception: ', '');
       });
@@ -317,9 +401,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Color(0xFF833AB4),  // Instagram purple
-                              Color(0xFFE1306C),  // Instagram pink
-                              Color(0xFFF77737),  // Instagram orange
+                              Color(0xFF833AB4),
+                              Color(0xFFE1306C),
+                              Color(0xFFF77737),
                             ],
                             stops: [0.0, 0.5, 1.0],
                           ),
@@ -351,6 +435,69 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                     color: Colors.white,
                                   ),
                                 ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Divider with "OR"
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(
+                              color: AppTheme.textSecondary.withOpacity(0.5),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'OR',
+                              style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(
+                              color: AppTheme.textSecondary.withOpacity(0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Google Sign In button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleGoogleSignIn,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.g_mobiledata_rounded,
+                                size: 24,
+                                color: Colors.red,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Sign in with Google',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),

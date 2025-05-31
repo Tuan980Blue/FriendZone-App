@@ -6,6 +6,7 @@ import 'home_page.dart';
 import '../../di/injection_container.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
+import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -24,6 +25,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Timer? _textTimer;
   final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
   final LoginUseCase _loginUseCase = sl<LoginUseCase>();
+  final GoogleSignInUseCase _googleSignInUseCase = sl<GoogleSignInUseCase>();
 
   @override
   void initState() {
@@ -78,6 +80,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           MaterialPageRoute(
             builder: (context) => LoginScreen(
               loginUseCase: _loginUseCase,
+              googleSignInUseCase: _googleSignInUseCase,
             ),
           ),
         );

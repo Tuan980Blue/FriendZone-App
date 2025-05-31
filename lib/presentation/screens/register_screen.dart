@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 import '../../domain/usecases/auth/register_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../theme/app_theme.dart';
@@ -140,7 +141,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => LoginScreen(
-          loginUseCase: _loginUseCase,
+          loginUseCase: sl<LoginUseCase>(),
+          googleSignInUseCase: sl<GoogleSignInUseCase>(),
         ),
       ),
     );

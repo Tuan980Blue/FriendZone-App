@@ -58,6 +58,7 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   mockito: ^5.4.4
   build_runner: ^2.4.8
+  google_sign_in: ^6.1.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -75,6 +76,7 @@ flutter:
     - assets/images/logo01.png
     - assets/images/logo02.png
     - assets/images/logo04.png
+    - assets/images/google_logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

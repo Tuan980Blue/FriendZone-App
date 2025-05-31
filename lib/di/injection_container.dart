@@ -26,6 +26,7 @@ import '../domain/usecases/posts/upload_image_usecase.dart';
 import '../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../presentation/blocs/notification/notification_bloc.dart';
+import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 
 final sl = GetIt.instance;
 
@@ -67,6 +68,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => RegisterUseCase(sl()));
   sl.registerLazySingleton(() => GetCurrentUserUseCase(sl()));
   sl.registerLazySingleton(() => LogoutUseCase(sl()));
+  sl.registerLazySingleton(() => GoogleSignInUseCase());
 
   // Post use cases
   sl.registerLazySingleton(() => GetPostsUseCase(sl()));
