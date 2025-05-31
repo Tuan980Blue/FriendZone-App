@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import 'otp_reset_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -29,24 +33,36 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     try {
-      // TODO: Implement password reset API call
-      await Future.delayed(const Duration(seconds: 2)); // Simulated API call
-      
-      if (!mounted) return;
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password reset instructions sent to your email'),
-          backgroundColor: AppTheme.success,
-        ),
+      final response = await http.post(
+        Uri.parse('https://web-socket-friendzone.onrender.com/api/auth/forgot-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "message": "Password reset OTP has been sent to your email",
+          "email": _emailController.text.trim(),
+        }),
       );
 
-      // Navigate back to login screen
-      Navigator.of(context).pop();
+      final data = jsonDecode(response.body);
+
+      if (data['error'] != null) {
+        setState(() {
+          _error = data['error'];
+        });
+      } else if (data['message'] != null) {
+        // Chuyển sang màn hình nhập OTP và mật khẩu mới
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => OtpResetScreen(email: _emailController.text.trim()),
+          ),
+        );
+      } else {
+        setState(() {
+          _error = 'Unexpected error. Please try again.';
+        });
+      }
     } catch (e) {
       setState(() {
-        _error = e.toString().replaceAll('Exception: ', '');
+        _error = 'Network error. Please try again.';
       });
     } finally {
       if (mounted) {
@@ -111,7 +127,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                         // Description
                         Text(
-                          'Enter your email address and we\'ll send you instructions to reset your password.',
+                          'Enter your email address and we\'ll send OTP for authentication.',
                           style: TextStyle(
                             fontSize: 16,
                             color: AppTheme.textSecondary,
@@ -213,7 +229,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     ),
                                   )
                                 : const Text(
-                                    'Send Reset Link',
+                                    'Send OTP Now',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
