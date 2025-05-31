@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 import '../theme/app_theme.dart';
+import 'home_page.dart';
 
 class GooglePasswordSetupScreen extends StatefulWidget {
   final Map<String, dynamic> userInfo;
@@ -48,10 +49,17 @@ class _GooglePasswordSetupScreenState extends State<GooglePasswordSetupScreen> {
       // Call Google sign in usecase again with password
       final result = await widget.googleSignInUseCase(userInfo);
 
+      // Kiểm tra và lưu token từ backend chỉ khi không requirePassword
+      if (result['requirePassword'] != true && result['token'] == null) {
+        throw Exception('Backend did not return authentication token');
+      }
+
       if (!mounted) return;
 
-      // Navigate to home on success
-      Navigator.of(context).pushReplacementNamed('/home');
+      // Existing user, navigate to home
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
     } catch (e) {
       setState(() {
         _error = e.toString().replaceAll('Exception: ', '');
