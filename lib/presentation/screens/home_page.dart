@@ -13,6 +13,7 @@ import '../../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
+import '../../domain/usecases/user/update_profile_usecase.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,6 +29,7 @@ class _HomePageState extends State<HomePage> {
   final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
   final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
   final GetUserByIdUseCase _getUserByIdUseCase = sl<GetUserByIdUseCase>();
+  final UpdateProfileUseCase _updateProfileUseCase = sl<UpdateProfileUseCase>();
 
   late final List<Widget> _pages;
 
@@ -48,6 +50,7 @@ class _HomePageState extends State<HomePage> {
         getCurrentUserUseCase: _getCurrentUserUseCase,
         logoutUseCase: _logoutUseCase,
         getUserByIdUseCase: _getUserByIdUseCase,
+        updateProfileUseCase: _updateProfileUseCase,
       ),
     ];
   }

@@ -3,6 +3,7 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../models/user_model.dart';
+import 'package:intl/intl.dart';
 
 abstract class UserRemoteDataSource {
   Future<Map<String, dynamic>> fetchUserSuggestions();
@@ -10,6 +11,21 @@ abstract class UserRemoteDataSource {
   Future<Map<String, dynamic>> getUserById(String userId);
   Future<void> followUser(String userId);
   Future<void> unfollowUser(String userId);
+  Future<Map<String, dynamic>> updateProfile({
+    required String id,
+    required String username,
+    required String email,
+    required String fullName,
+    String? avatar,
+    String? bio,
+    String? status,
+    bool? isPrivate,
+    String? website,
+    String? location,
+    String? phoneNumber,
+    String? gender,
+    DateTime? birthDate,
+  });
 }
 
 class UserRemoteDataSourceImpl implements UserRemoteDataSource {
@@ -93,6 +109,62 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         throw ServerException(data['message'] ?? 'Failed to unfollow user');
       }
     } catch (e) {
+      throw ServerException('Network error occurred: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateProfile({
+    required String id,
+    required String username,
+    required String email,
+    required String fullName,
+    String? avatar,
+    String? bio,
+    String? status,
+    bool? isPrivate,
+    String? website,
+    String? location,
+    String? phoneNumber,
+    String? gender,
+    DateTime? birthDate,
+  }) async {
+    try {
+      final body = {
+        'username': username,
+        'email': email,
+        'fullName': fullName,
+        if (avatar != null) 'avatar': avatar,
+        if (bio != null) 'bio': bio,
+        if (status != null) 'status': status,
+        if (isPrivate != null) 'isPrivate': isPrivate,
+        if (website != null) 'website': website,
+        if (location != null) 'location': location,
+        if (phoneNumber != null) 'phoneNumber': phoneNumber,
+        if (gender != null) 'gender': gender,
+        if (birthDate != null) 'birthDate': birthDate.toIso8601String(),
+      };
+
+      final response = await _apiClient.put(
+        ApiConstants.updateProfileEndpoint,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['user'] != null) {
+          return data;
+        }
+
+        throw ServerException('Invalid response format: missing user data');
+      } else {
+        final data = json.decode(response.body);
+        print('[updateProfile] ERROR: ' + (data['message'] ?? 'Failed to update profile'));
+        throw ServerException(data['message'] ?? 'Failed to update profile');
+      }
+    } catch (e) {
+      print('[updateProfile] Exception: ' + e.toString());
+      if (e is ServerException) rethrow;
       throw ServerException('Network error occurred: $e');
     }
   }

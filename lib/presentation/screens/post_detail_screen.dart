@@ -12,6 +12,7 @@ import '../../di/injection_container.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
+import '../../domain/usecases/user/update_profile_usecase.dart';
 
 
 class PostDetailScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final GetUserByIdUseCase _getUserByIdUseCase = sl<GetUserByIdUseCase>();
   final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
   final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
+  final UpdateProfileUseCase _updateProfileUseCase = sl<UpdateProfileUseCase>();
 
   Map<String, dynamic>? postData;
   bool isLoading = true;
@@ -42,6 +44,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           getCurrentUserUseCase: _getCurrentUserUseCase,
           logoutUseCase: _logoutUseCase,
           getUserByIdUseCase: _getUserByIdUseCase,
+          updateProfileUseCase: _updateProfileUseCase,
           userId: userId,
         ),
       ),

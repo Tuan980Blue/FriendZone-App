@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../domain/usecases/user/update_profile_usecase.dart';
 import '../../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
@@ -27,6 +28,7 @@ class _UserSuggestionsPageState extends State<UserSuggestionsPage> {
   final GetUserByIdUseCase _getUserByIdUseCase = sl<GetUserByIdUseCase>();
   final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
   final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
+  final UpdateProfileUseCase _updateProfileUseCase = sl<UpdateProfileUseCase>();
 
   @override
   void initState() {
@@ -74,6 +76,7 @@ class _UserSuggestionsPageState extends State<UserSuggestionsPage> {
           getCurrentUserUseCase: _getCurrentUserUseCase,
           logoutUseCase: _logoutUseCase,
           getUserByIdUseCase: _getUserByIdUseCase,
+          updateProfileUseCase: _updateProfileUseCase,
           userId: userId,
         ),
       ),
