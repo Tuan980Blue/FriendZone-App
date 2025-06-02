@@ -40,18 +40,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    decoration: BoxDecoration(
-                      color: selectedIndex == 2 
-                          ? AppTheme.accentPink.withOpacity(0.1)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
                     child: Stack(
                       children: [
                         IconButton(
                           icon: Icon(
                             Icons.notifications_none,
-                            color: selectedIndex == 2 
+                            color: selectedIndex == 2
                                 ? AppTheme.accentPink
                                 : AppTheme.textPrimary,
                           ),
@@ -65,15 +59,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         if (unreadCount > 0)
                           Positioned(
                             right: 8,
-                            top: 8,
+                            top: 2,
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: AppTheme.accentPink,
+                                color: AppTheme.white,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: AppTheme.cardLight,
-                                  width: 2,
+                                  width: 1,
                                 ),
                               ),
                               constraints: const BoxConstraints(
@@ -83,8 +77,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                               child: Text(
                                 unreadCount > 99 ? '99+' : unreadCount.toString(),
                                 style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
+                                  color: AppTheme.accentPink,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 textAlign: TextAlign.center,
