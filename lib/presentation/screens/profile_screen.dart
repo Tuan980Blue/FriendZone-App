@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/services.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
@@ -35,12 +38,16 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
   User? _user;
   User? _currentUser;
   bool _isLoading = true;
   String _error = '';
   final LoginUseCase _loginUseCase = sl<LoginUseCase>();
+  final ScrollController _scrollController = ScrollController();
+  bool _showAppBarTitle = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   // Kiểm tra xem đang xem profile của chính mình hay không
   bool get isViewingOwnProfile {
@@ -52,6 +59,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadUserProfile();
+    
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+    
+    _scrollController.addListener(_onScroll);
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.offset > 100 && !_showAppBarTitle) {
+      setState(() => _showAppBarTitle = true);
+    } else if (_scrollController.offset <= 100 && _showAppBarTitle) {
+      setState(() => _showAppBarTitle = false);
+    }
   }
 
   Future<void> _loadUserProfile() async {
@@ -147,19 +181,137 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 280.0,
+      floating: false,
+      pinned: true,
+      stretch: true,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+      leading: IconButton(
+        icon: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.3),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.arrow_back, color: Colors.white),
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+      actions: [
+        if (isViewingOwnProfile)
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.3),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.logout, color: Colors.white),
+            ),
+            onPressed: _handleLogout,
+          ),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
+        title: AnimatedOpacity(
+          opacity: _showAppBarTitle ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          child: Text(
+            isViewingOwnProfile ? 'My Profile' : _user?.fullName ?? 'Profile',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              shadows: [
+                Shadow(
+                  offset: Offset(0, 1),
+                  blurRadius: 3.0,
+                  color: Colors.black54,
+                ),
+              ],
+            ),
+          ),
+        ),
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Cover Image
+            CachedNetworkImage(
+              imageUrl: _user?.avatar ?? '',
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Container(color: Colors.white),
+              ),
+              errorWidget: (context, url, error) => Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Theme.of(context).primaryColor,
+                      Theme.of(context).primaryColor.withOpacity(0.7),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Gradient Overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.7),
+                  ],
+                ),
+              ),
+            ),
+            // Profile Avatar
+            Positioned(
+              left: 16,
+              bottom: 16,
+              child: Hero(
+                tag: 'profile_${_user?.id}',
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: _user?.avatar != null
+                        ? NetworkImage(_user!.avatar!)
+                        : null,
+                    child: _user?.avatar == null
+                        ? const Icon(Icons.person, size: 50, color: Colors.white)
+                        : null,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isViewingOwnProfile ? 'My Profile' : 'Profile'),
-        actions: [
-          if (isViewingOwnProfile)
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: _handleLogout,
-            ),
-        ],
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error.isNotEmpty
@@ -182,56 +334,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 )
               : _user == null
                   ? const Center(child: Text('User not found'))
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Profile Header
-                          ProfileHeader(
-                            user: _user!,
-                            isViewingOwnProfile: isViewingOwnProfile,
-                            onEditProfile: _showEditProfileDialog,
-                            onFollow: _handleFollow,
-                            onMessage: _handleMessage,
-                          ),
-                          const SizedBox(height: 24),
+                  : CustomScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        _buildSliverAppBar(),
+                        SliverToBoxAdapter(
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // User Info Section
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 120),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _user!.fullName,
+                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        if (_user!.username != null) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '@${_user!.username}',
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
 
-                          // Stats
-                          ProfileStats(
-                            postsCount: _user!.postsCount ?? 0,
-                            followersCount: _user!.followersCount ?? 0,
-                            followingCount: _user!.followingCount ?? 0,
-                          ),
-                          const SizedBox(height: 24),
+                                  // Action Buttons
+                                  if (!isViewingOwnProfile)
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: _handleFollow,
+                                            icon: const Icon(Icons.person_add),
+                                            label: const Text('Follow'),
+                                            style: ElevatedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: _handleMessage,
+                                            icon: const Icon(Icons.message),
+                                            label: const Text('Message'),
+                                            style: OutlinedButton.styleFrom(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  const SizedBox(height: 24),
 
-                          // Bio
-                          if (_user!.bio != null && _user!.bio!.isNotEmpty) ...[
-                            Text(
-                              'Bio',
-                              style: Theme.of(context).textTheme.titleMedium,
+                                  // Stats
+                                  ProfileStats(
+                                    postsCount: _user!.postsCount ?? 0,
+                                    followersCount: _user!.followersCount ?? 0,
+                                    followingCount: _user!.followingCount ?? 0,
+                                  ),
+                                  const SizedBox(height: 24),
+
+                                  // Bio
+                                  if (_user!.bio != null && _user!.bio!.isNotEmpty) ...[
+                                    Text(
+                                      'Bio',
+                                      style: Theme.of(context).textTheme.titleMedium,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(_user!.bio!),
+                                    const SizedBox(height: 24),
+                                  ],
+
+                                  // Personal Information
+                                  ProfilePersonalInfo(user: _user!),
+                                  const SizedBox(height: 16),
+
+                                  // Contact Information
+                                  ProfileContactInfo(
+                                    user: _user!,
+                                    isViewingOwnProfile: isViewingOwnProfile,
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Account Information
+                                  if (isViewingOwnProfile)
+                                    ProfileAccountInfo(user: _user!),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 8),
-                            Text(_user!.bio!),
-                            const SizedBox(height: 24),
-                          ],
-
-                          // Personal Information
-                          ProfilePersonalInfo(user: _user!),
-                          const SizedBox(height: 16),
-
-                          // Contact Information
-                          ProfileContactInfo(
-                            user: _user!,
-                            isViewingOwnProfile: isViewingOwnProfile,
                           ),
-                          const SizedBox(height: 16),
-
-                          // Account Information
-                          if (isViewingOwnProfile)
-                            ProfileAccountInfo(user: _user!),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
     );
   }
