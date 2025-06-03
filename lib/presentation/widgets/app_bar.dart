@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../di/injection_container.dart' as di;
+import '../../domain/usecases/auth/get_current_user_usecase.dart';
+import '../../domain/usecases/auth/logout_usecase.dart';
+import '../../domain/usecases/user/get_user_by_id_usecase.dart';
+import '../../domain/usecases/user/update_profile_usecase.dart';
 import '../theme/app_theme.dart';
 import '../blocs/notification/notification_bloc.dart';
+import '../blocs/search/search_bloc.dart';
+import 'search_bar.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Function(int)? onTabChanged;
@@ -27,9 +34,42 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             height: 32,
             fit: BoxFit.contain,
           ),
-          // Action icons
+          // Search and Action icons
           Row(
             children: [
+              // Search icon that opens search overlay
+              IconButton(
+                icon: Icon(
+                  Icons.search,
+                  color: AppTheme.textPrimary,
+                ),
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => Container(
+                      height: MediaQuery.of(context).size.height * 0.9,
+                      decoration: BoxDecoration(
+                        color: AppTheme.backgroundLight,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
+                      ),
+                      child: BlocProvider(
+                        create: (context) => di.sl<SearchBloc>(),
+                        child: CustomSearchBar(
+                          getUserByIdUseCase: di.sl<GetUserByIdUseCase>(),
+                          getCurrentUserUseCase: di.sl<GetCurrentUserUseCase>(),
+                          logoutUseCase: di.sl<LogoutUseCase>(),
+                          updateProfileUseCase: di.sl<UpdateProfileUseCase>(),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 4),
               // Notification icon with badge
               BlocBuilder<NotificationBloc, NotificationState>(
                 builder: (context, state) {

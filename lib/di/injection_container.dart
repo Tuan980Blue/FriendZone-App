@@ -28,6 +28,7 @@ import '../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../presentation/blocs/notification/notification_bloc.dart';
 import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
+import '../presentation/blocs/search/search_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -96,4 +97,6 @@ Future<void> init() async {
       getUnreadCountUseCase: sl(),
     ),
   );
+  
+  sl.registerFactory(() => SearchBloc(apiClient: sl()));
 } 
