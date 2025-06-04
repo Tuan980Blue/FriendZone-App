@@ -55,12 +55,12 @@ class CreatePostEntry extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.blueAccent, width: 1),
+                        borderRadius: BorderRadius.circular(4),
+
                       ),
                       child: Text(
                         '${user.fullName.isNotEmpty ? user.fullName : user.username} ơi, bạn đang nghĩ gì thế?',
-                        style: const TextStyle(color: Colors.grey, fontSize: 16),
+                        style: const TextStyle(color: Colors.grey, fontSize: 15),
                       ),
                     ),
                   ),
