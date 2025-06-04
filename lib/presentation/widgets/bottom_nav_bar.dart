@@ -5,12 +5,14 @@ class BottomNavBar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onDestinationSelected;
   final int? notificationCount;
+  final VoidCallback? onCreatePost;
 
   const BottomNavBar({
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
     this.notificationCount,
+    this.onCreatePost,
   });
 
   @override
@@ -49,6 +51,7 @@ class BottomNavBar extends StatelessWidget {
               index: 1,
               theme: theme,
             ),
+            _buildCreatePostButton(context),
             _buildNavItem(
               icon: Icons.notifications_none_outlined,
               selectedIcon: Icons.notifications_rounded,
@@ -65,6 +68,31 @@ class BottomNavBar extends StatelessWidget {
               theme: theme,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreatePostButton(BuildContext context) {
+    return GestureDetector(
+      onTap: onCreatePost,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.pinkAccent.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: CircleAvatar(
+          radius: 28,
+          backgroundColor: Colors.pinkAccent,
+          child: Icon(Icons.add, color: Colors.white, size: 32),
         ),
       ),
     );
