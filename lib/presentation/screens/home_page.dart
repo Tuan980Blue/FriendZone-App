@@ -8,12 +8,14 @@ import 'package:friendzoneapp/presentation/widgets/bottom_nav_bar.dart';
 import 'package:friendzoneapp/presentation/widgets/app_bar.dart';
 import 'package:friendzoneapp/presentation/blocs/notification/notification_bloc.dart';
 import '../../di/injection_container.dart';
+import '../../domain/entities/user.dart';
 import '../../domain/usecases/posts/get_posts_usecase.dart';
 import '../../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
+import '../widgets/create_post.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -70,6 +72,22 @@ class _HomePageState extends State<HomePage> {
         bottomNavigationBar: BottomNavBar(
           selectedIndex: _selectedIndex,
           onDestinationSelected: _onTabChanged,
+          onCreatePost: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (_) => FutureBuilder<User>(
+                future: _getCurrentUserUseCase(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  return CreatePostModal(user: snapshot.data!);
+                },
+              ),
+            );
+          },
         ),
       ),
     );

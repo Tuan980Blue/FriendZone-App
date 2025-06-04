@@ -114,7 +114,7 @@ class _PostsPageState extends State<PostsPage> {
                 itemCount: posts.length + (hasMore ? 1 : 0) + 1, // +1 for CreatePostWidget
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return CreatePostWidget();
+                    return const CreatePostEntry();
                   }
                   
                   final postIndex = index - 1;
