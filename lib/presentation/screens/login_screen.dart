@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:friendzoneapp/core/errors/exceptions.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -157,11 +158,24 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
-    } catch (e) {
+
+    }
+    on AuthException catch (e) {
       setState(() {
-        _error = e.toString().replaceAll('Exception: ', '');
+        _error = e.message;
       });
-    } finally {
+    }
+    on ServerException catch (e) {
+      setState(() {
+        _error = e.message;
+      });
+    }
+    catch (e) {
+      setState(() {
+        _error = 'An unexpected error occurred. Please try again.';
+      });
+    }
+    finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
