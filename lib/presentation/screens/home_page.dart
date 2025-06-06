@@ -69,23 +69,52 @@ class _HomePageState extends State<HomePage> {
               ) 
             : null,
         body: _pages[_selectedIndex],
-        bottomNavigationBar: BottomNavBar(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: _onTabChanged,
-          onCreatePost: () {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => FutureBuilder<User>(
-                future: _getCurrentUserUseCase(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return CreatePostModal(user: snapshot.data!);
-                },
+        floatingActionButton: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.pink.withOpacity(0.25),
+                blurRadius: 24,
+                spreadRadius: 2,
               ),
+            ],
+          ),
+          child: FloatingActionButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => FutureBuilder<User>(
+                  future: _getCurrentUserUseCase(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    return CreatePostModal(user: snapshot.data!);
+                  },
+                ),
+              );
+            },
+            backgroundColor: Colors.pinkAccent,
+            elevation: 0,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.add, color: Colors.white, size: 38),
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        bottomNavigationBar: FutureBuilder<User>(
+          future: _getCurrentUserUseCase(),
+          builder: (context, snapshot) {
+            String? avatarUrl;
+            if (snapshot.hasData) {
+              avatarUrl = snapshot.data!.avatar;
+            }
+            return CustomBottomNavBar(
+              selectedIndex: _selectedIndex,
+              onTabChanged: _onTabChanged,
+              avatarUrl: avatarUrl,
             );
           },
         ),
