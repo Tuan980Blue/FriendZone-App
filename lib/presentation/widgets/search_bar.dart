@@ -10,7 +10,6 @@ import '../blocs/search/search_state.dart';
 import '../theme/app_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../screens/profile_screen.dart';
-import '../../di/injection_container.dart';
 
 class CustomSearchBar extends StatefulWidget {
   final GetUserByIdUseCase getUserByIdUseCase;
