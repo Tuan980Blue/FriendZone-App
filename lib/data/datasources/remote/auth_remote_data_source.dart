@@ -39,10 +39,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         await _apiClient.setAuthToken(data['token']);
         return data;
       } else {
-        throw AuthException(data['message'] ?? 'Failed to login');
+        String rawErrorMessage = data['error'] ?? 'Failed to login';
+        String displayErrorMessage;
+        if (rawErrorMessage == 'Invalid credentials') {
+          displayErrorMessage = 'Email or password is incorrect.';
+        }
+        else {
+          displayErrorMessage = rawErrorMessage;
+        }
+        throw AuthException(displayErrorMessage);
       }
-    } catch (e) {
-      throw ServerException('Network error occurred: $e');
+    }
+    on AuthException {
+      rethrow;
+    }
+    catch (e) {
+      throw ServerException('Network error or unexpected issue occurred: $e');
     }
   }
 

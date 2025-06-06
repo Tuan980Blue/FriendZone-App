@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:friendzoneapp/core/errors/exceptions.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -36,6 +39,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   final RegisterUseCase _registerUseCase = sl<RegisterUseCase>();
+  String? _emailValidationError;
+  String? _passwordValidationError;
+  Timer? _emailErrorTimer;
+  Timer? _passwordErrorTimer;
 
   @override
   void initState() {
@@ -62,6 +69,77 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Future<void> _login() async {
+    setState(() {
+      _emailValidationError = null;
+      _passwordValidationError = null;
+      _emailErrorTimer?.cancel();
+      _passwordErrorTimer?.cancel();
+    });
+
+    bool isValid = true;
+
+    void startEmailErrorTimer() {
+      _emailErrorTimer?.cancel();
+      _emailErrorTimer = Timer(const Duration(seconds: 4), () {
+        if (mounted) {
+          setState(() {
+            _emailValidationError = null;
+          });
+        }
+      });
+    }
+
+    void startPasswordErrorTimer() {
+      _passwordErrorTimer?.cancel();
+      _passwordErrorTimer = Timer(const Duration(seconds: 4), () {
+        if (mounted) {
+          setState(() {
+            _passwordValidationError = null;
+          });
+        }
+      });
+    }
+
+    String? validateEmail(String? value) {
+      if (value == null || value.isEmpty) {
+        return 'Please enter your email';
+      }
+      if (!value.contains('@')) {
+        return 'Please enter a valid email';
+      }
+      return null;
+    }
+
+    String? validatePassword(String? value) {
+      if (value == null || value.isEmpty) {
+        return 'Please enter your password';
+      }
+      if (value.length < 6) {
+        return 'Password must be at least 6 characters';
+      }
+      return null;
+    }
+
+    String? emailValidationResult = validateEmail(_emailController.text.trim());
+    if (emailValidationResult != null) {
+      setState(() {
+        _emailValidationError = emailValidationResult;
+        startEmailErrorTimer();
+      });
+      isValid = false;
+    }
+
+    String? passwordValidationResult = validatePassword(_passwordController.text);
+    if (passwordValidationResult != null) {
+      setState(() {
+        _passwordValidationError = passwordValidationResult;
+        startPasswordErrorTimer();
+      });
+      isValid = false;
+    }
+
+    if (!isValid) return;
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -80,11 +158,24 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
-    } catch (e) {
+
+    }
+    on AuthException catch (e) {
       setState(() {
-        _error = e.toString().replaceAll('Exception: ', '');
+        _error = e.message;
       });
-    } finally {
+    }
+    on ServerException catch (e) {
+      setState(() {
+        _error = e.message;
+      });
+    }
+    catch (e) {
+      setState(() {
+        _error = 'An unexpected error occurred. Please try again.';
+      });
+    }
+    finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -216,8 +307,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           boxShadow: [
                             BoxShadow(
                               color: AppTheme.primaryBlue.withOpacity(0.2),
-                              blurRadius: 20,
-                              spreadRadius: 5,
+                              blurRadius: 50,
+                              spreadRadius: 1,
                             ),
                           ],
                         ),
@@ -280,15 +371,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             fillColor: Theme.of(context).brightness == Brightness.dark
                                 ? const Color(0xFF2A2A2A)
                                 : Colors.white,
+                            errorText: _emailValidationError,
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your email';
-                            }
-                            if (!value.contains('@')) {
-                              return 'Please enter a valid email';
-                            }
                             return null;
+                          },
+                          onChanged: (value) {
+                            if (_emailValidationError != null) {
+                              setState(() {
+                                _emailValidationError = null;
+                                _emailErrorTimer?.cancel();
+                              });
+                            }
                           },
                         ),
                       ),
@@ -333,15 +427,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             fillColor: Theme.of(context).brightness == Brightness.dark
                                 ? const Color(0xFF2A2A2A)
                                 : Colors.white,
+                            errorText: _passwordValidationError,
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            if (value.length < 6) {
-                              return 'Password must be at least 6 characters';
-                            }
                             return null;
+                          },
+                          onChanged: (value) {
+                            if (_passwordValidationError != null) {
+                              setState(() {
+                                _passwordValidationError = null;
+                                _passwordErrorTimer?.cancel();
+                              });
+                            }
                           },
                         ),
                       ),
