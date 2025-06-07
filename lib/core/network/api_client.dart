@@ -18,9 +18,9 @@ class ApiClient {
   }
 
   Map<String, String> get headers => {
-    if (_authToken != null) 'Authorization': 'Bearer $_authToken',
-    'Content-Type': 'application/json',
-  };
+        if (_authToken != null) 'Authorization': 'Bearer $_authToken',
+        'Content-Type': 'application/json',
+      };
 
   Future<void> setAuthToken(String token) async {
     _authToken = token;
@@ -36,36 +36,44 @@ class ApiClient {
 
   Future<http.Response> get(String endpoint) async {
     try {
-      final response = await _client.get(
-        Uri.parse('${ApiConstants.baseUrl}$endpoint'),
-        headers: headers,
-      ).timeout(Duration(seconds: ApiConstants.timeoutDuration));
+      final response = await _client
+          .get(
+            Uri.parse('${ApiConstants.baseUrl}$endpoint'),
+            headers: headers,
+          )
+          .timeout(Duration(seconds: ApiConstants.timeoutDuration));
       return response;
     } catch (e) {
       throw Exception('Network error occurred: $e');
     }
   }
 
-  Future<http.Response> post(String endpoint, {required Map<String, dynamic> body}) async {
+  Future<http.Response> post(String endpoint,
+      {required Map<String, dynamic> body}) async {
     try {
-      final response = await _client.post(
-        Uri.parse('${ApiConstants.baseUrl}$endpoint'),
-        headers: headers,
-        body: json.encode(body),
-      ).timeout(Duration(seconds: ApiConstants.timeoutDuration));
+      final response = await _client
+          .post(
+            Uri.parse('${ApiConstants.baseUrl}$endpoint'),
+            headers: headers,
+            body: json.encode(body),
+          )
+          .timeout(Duration(seconds: ApiConstants.timeoutDuration));
       return response;
     } catch (e) {
       throw Exception('Network error occurred: $e');
     }
   }
 
-  Future<http.Response> put(String endpoint, {required Map<String, dynamic> body}) async {
+  Future<http.Response> put(String endpoint,
+      {required Map<String, dynamic> body}) async {
     try {
-      final response = await _client.put(
-        Uri.parse('${ApiConstants.baseUrl}$endpoint'),
-        headers: headers,
-        body: json.encode(body),
-      ).timeout(Duration(seconds: ApiConstants.timeoutDuration));
+      final response = await _client
+          .put(
+            Uri.parse('${ApiConstants.baseUrl}$endpoint'),
+            headers: headers,
+            body: json.encode(body),
+          )
+          .timeout(Duration(seconds: ApiConstants.timeoutDuration));
       return response;
     } catch (e) {
       throw Exception('Network error occurred: $e');
@@ -74,13 +82,37 @@ class ApiClient {
 
   Future<http.Response> delete(String endpoint) async {
     try {
-      final response = await _client.delete(
-        Uri.parse('${ApiConstants.baseUrl}$endpoint'),
-        headers: headers,
-      ).timeout(Duration(seconds: ApiConstants.timeoutDuration));
+      final response = await _client
+          .delete(
+            Uri.parse('${ApiConstants.baseUrl}$endpoint'),
+            headers: headers,
+          )
+          .timeout(Duration(seconds: ApiConstants.timeoutDuration));
       return response;
     } catch (e) {
       throw Exception('Network error occurred: $e');
     }
   }
-} 
+
+  Future<http.Response> changePassword(
+      String endpoint,{
+      required String currentPassword,
+      required String newPassword,
+  }) async {
+    try {
+      final response = await _client
+          .post(
+            Uri.parse('${ApiConstants.baseUrl}$endpoint'),
+            headers: headers,
+            body: json.encode({
+              'currentPassword': currentPassword,
+              'newPassword': newPassword,
+            }),
+          )
+          .timeout(Duration(seconds: ApiConstants.timeoutDuration));
+      return response;
+    } catch (e) {
+      throw Exception('Network error occurred: $e');
+    }
+  }
+}

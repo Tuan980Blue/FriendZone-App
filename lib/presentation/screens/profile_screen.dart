@@ -18,6 +18,8 @@ import '../widgets/profile/profile_account_info.dart';
 import '../widgets/profile/profile_edit_dialog.dart';
 import '../widgets/profile/profile_posts.dart';
 import '../theme/app_theme.dart';
+import 'change_password_screen.dart';
+import '../theme/app_page_transitions.dart';
 
 class ProfileScreen extends StatefulWidget {
   final GetCurrentUserUseCase getCurrentUserUseCase;
@@ -61,7 +63,10 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     super.initState();
     _loadUserProfile();
     
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3, // Always 3 tabs, just different content based on isViewingOwnProfile
+      vsync: this,
+    );
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -461,11 +466,17 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         unselectedLabelColor: Colors.grey[600],
         indicatorColor: AppTheme.accentPink,
         indicatorWeight: 3,
-        tabs: const [
-          Tab(icon: Icon(Icons.grid_on), text: 'Bài viết'),
-          Tab(icon: Icon(Icons.person_outline), text: 'Thông tin'),
-          Tab(icon: Icon(Icons.settings_outlined), text: 'Cài đặt'),
-        ],
+        tabs: isViewingOwnProfile
+            ? const [
+                Tab(icon: Icon(Icons.grid_on), text: 'Bài viết'),
+                Tab(icon: Icon(Icons.person_outline), text: 'Thông tin'),
+                Tab(icon: Icon(Icons.settings_outlined), text: 'Cài đặt'),
+              ]
+            : const [
+                Tab(icon: Icon(Icons.grid_on), text: 'Bài viết'),
+                Tab(icon: Icon(Icons.person_outline), text: 'Thông tin'),
+                Tab(icon: Icon(Icons.info_outline), text: 'Giới thiệu'),
+              ],
       ),
     );
   }
@@ -474,13 +485,13 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     return TabBarView(
       controller: _tabController,
       children: [
-        // Posts Tab
+        // Posts Tab (Same for both views)
         ProfilePosts(
           userId: _user!.id,
           isViewingOwnProfile: isViewingOwnProfile,
         ),
         
-        // Info Tab
+        // Info Tab (Same for both views)
         SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -495,8 +506,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ),
         ),
         
-        // Settings Tab
+        // Third Tab (Different based on isViewingOwnProfile)
         if (isViewingOwnProfile)
+          // Settings Tab for own profile
           SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -506,7 +518,13 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                 ListTile(
                   leading: const Icon(Icons.lock_outline, color: Colors.blue),
                   title: const Text('Đổi mật khẩu'),
-                  onTap: () {}, // Chưa cần sự kiện
+                  onTap: () {
+                    Navigator.of(context).push(
+                      AppPageTransitions.slideUp(
+                        const ChangePasswordScreen(),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 14),
                 ListTile(
@@ -518,8 +536,46 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             ),
           )
         else
-          const Center(
-            child: Text('Chỉ người dùng mới có thể xem cài đặt'),
+          // About Tab for other profiles
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Giới thiệu về ${_user!.fullName}',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (_user?.bio != null && _user!.bio!.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[200]!),
+                    ),
+                    child: Text(
+                      _user!.bio!,
+                      style: TextStyle(
+                        color: Colors.grey[800],
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 24),
+                Text(
+                  'Thông tin cơ bản',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ProfilePersonalInfo(user: _user!),
+              ],
+            ),
           ),
       ],
     );
