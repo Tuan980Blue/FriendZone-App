@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:friendzoneapp/domain/usecases/users/follow_user_usecase.dart';
+import 'package:friendzoneapp/domain/usecases/users/unfollow_user_usecase.dart';
 import 'package:friendzoneapp/presentation/screens/posts_page.dart';
 import 'package:friendzoneapp/presentation/screens/profile_screen.dart';
 import 'package:friendzoneapp/presentation/screens/user_suggestions_page.dart';
@@ -32,6 +34,8 @@ class _HomePageState extends State<HomePage> {
   final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
   final GetUserByIdUseCase _getUserByIdUseCase = sl<GetUserByIdUseCase>();
   final UpdateProfileUseCase _updateProfileUseCase = sl<UpdateProfileUseCase>();
+  final FollowUserUseCase _followUserUseCase = sl<FollowUserUseCase>();
+  final UnfollowUserUseCase _unfollowUserUseCase = sl<UnfollowUserUseCase>();
 
   late final List<Widget> _pages;
 
@@ -53,6 +57,8 @@ class _HomePageState extends State<HomePage> {
         logoutUseCase: _logoutUseCase,
         getUserByIdUseCase: _getUserByIdUseCase,
         updateProfileUseCase: _updateProfileUseCase,
+        followUserUseCase: _followUserUseCase,
+        unfollowUserUseCase: _unfollowUserUseCase,
       ),
     ];
   }

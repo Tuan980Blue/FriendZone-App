@@ -20,12 +20,17 @@ import '../widgets/profile/profile_posts.dart';
 import '../theme/app_theme.dart';
 import 'change_password_screen.dart';
 import '../theme/app_page_transitions.dart';
+import '../../domain/usecases/users/follow_user_usecase.dart';
+import '../../domain/usecases/users/unfollow_user_usecase.dart';
+import '../widgets/common/custom_snackbar.dart';
 
 class ProfileScreen extends StatefulWidget {
   final GetCurrentUserUseCase getCurrentUserUseCase;
   final LogoutUseCase logoutUseCase;
   final GetUserByIdUseCase getUserByIdUseCase;
   final UpdateProfileUseCase updateProfileUseCase;
+  final FollowUserUseCase followUserUseCase;
+  final UnfollowUserUseCase unfollowUserUseCase;
   final String? userId;
 
   const ProfileScreen({
@@ -34,6 +39,8 @@ class ProfileScreen extends StatefulWidget {
     required this.logoutUseCase,
     required this.getUserByIdUseCase,
     required this.updateProfileUseCase,
+    required this.followUserUseCase,
+    required this.unfollowUserUseCase,
     this.userId,
   });
 
@@ -269,13 +276,38 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     );
   }
 
-  void _handleFollow() {
-    // TODO: Implement follow/unfollow
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Follow functionality coming soon!'),
-      ),
-    );
+  Future<void> _handleFollow() async {
+    if (_user == null) return;
+    
+    try {
+      if (_user!.isFollowing) {
+        await widget.unfollowUserUseCase(UnfollowUserParams(_user!.id));
+      } else {
+        await widget.followUserUseCase(FollowUserParams(_user!.id));
+      }
+      
+      // Refresh user profile to get updated following status
+      await _loadUserProfile();
+      
+      if (!mounted) return;
+      
+      // Show success notification
+      CustomSnackBar.showSuccess(
+        context: context,
+        message: _user!.isFollowing 
+          ? 'Bạn đã theo dõi ${_user!.fullName}'
+          : 'Bạn đã hủy theo dõi ${_user!.fullName}',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      
+      // Show error notification
+      CustomSnackBar.showError(
+        context: context,
+        message: 'Không thể ${_user!.isFollowing ? 'hủy theo dõi' : 'theo dõi'} ${_user!.fullName}. Vui lòng thử lại sau.',
+        onRetry: _handleFollow,
+      );
+    }
   }
 
   void _handleMessage() {
@@ -389,12 +421,16 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: _handleFollow,
-                              icon: const Icon(Icons.person_add, size: 18),
-                              label: const Text('Follow'),
+                              icon: Icon(
+                                _user!.isFollowing ? Icons.person_remove : Icons.person_add,
+                                size: 18,
+                              ),
+                              label: Text(_user!.isFollowing ? 'Following' : 'Follow'),
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 8),
-                                backgroundColor: AppTheme.accentPink,
-                                foregroundColor: Colors.white,
+                                backgroundColor: _user!.isFollowing ? Colors.grey[200] : AppTheme.accentPink,
+                                foregroundColor: _user!.isFollowing ? Colors.grey[800] : Colors.white,
+                                elevation: _user!.isFollowing ? 0 : 1,
                               ),
                             ),
                           ),

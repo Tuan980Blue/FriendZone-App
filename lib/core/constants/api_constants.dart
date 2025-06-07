@@ -16,5 +16,6 @@ class ApiConstants {
   static const String usersEndpoint = '/users';
   
   // Follow endpoints
-  static const String followEndpoint = '/follows';
+  static const String followEndpoint = '/follows/follow';
+  static const String unfollowEndpoint = '/follows/unfollow';
 } 

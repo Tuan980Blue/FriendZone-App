@@ -29,6 +29,8 @@ import '../presentation/blocs/notification/notification_bloc.dart';
 import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
 import '../presentation/blocs/search/search_bloc.dart';
+import '../domain/usecases/users/follow_user_usecase.dart';
+import '../domain/usecases/users/unfollow_user_usecase.dart';
 
 final sl = GetIt.instance;
 
@@ -81,6 +83,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetUserSuggestionsUseCase(sl()));
   sl.registerLazySingleton(() => GetUserByIdUseCase(sl()));
   sl.registerLazySingleton(() => UpdateProfileUseCase(sl()));
+  sl.registerLazySingleton(() => FollowUserUseCase(sl()));
+  sl.registerLazySingleton(() => UnfollowUserUseCase(sl()));
 
   // Notification use cases
   sl.registerLazySingleton(() => GetNotificationsUseCase(sl()));
