@@ -15,6 +15,8 @@ import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
+import '../../domain/usecases/users/follow_user_usecase.dart';
+import '../../domain/usecases/users/unfollow_user_usecase.dart';
 
 
 class PostDetailScreen extends StatefulWidget {
@@ -30,6 +32,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
   final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
   final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
   final UpdateProfileUseCase _updateProfileUseCase = sl<UpdateProfileUseCase>();
+  final FollowUserUseCase _followUserUseCase = sl<FollowUserUseCase>();
+  final UnfollowUserUseCase _unfollowUserUseCase = sl<UnfollowUserUseCase>();
 
   Map<String, dynamic>? postData;
   bool isLoading = true;
@@ -52,6 +56,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
           logoutUseCase: _logoutUseCase,
           getUserByIdUseCase: _getUserByIdUseCase,
           updateProfileUseCase: _updateProfileUseCase,
+          followUserUseCase: _followUserUseCase,
+          unfollowUserUseCase: _unfollowUserUseCase,
           userId: userId,
         ),
       ),

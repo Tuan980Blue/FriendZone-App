@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:friendzoneapp/domain/usecases/user/update_profile_usecase.dart';
+import 'package:friendzoneapp/domain/usecases/users/follow_user_usecase.dart';
+import 'package:friendzoneapp/domain/usecases/users/unfollow_user_usecase.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:friendzoneapp/presentation/widgets/post_likes_dialog.dart';
@@ -80,6 +82,8 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
           logoutUseCase: sl<LogoutUseCase>(),
           getUserByIdUseCase: sl<GetUserByIdUseCase>(),
           updateProfileUseCase: sl<UpdateProfileUseCase>(),
+          followUserUseCase: sl<FollowUserUseCase>(),
+          unfollowUserUseCase: sl<UnfollowUserUseCase>(),
           userId: userId,
         ),
       ),

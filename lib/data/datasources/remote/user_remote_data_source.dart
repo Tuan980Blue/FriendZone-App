@@ -88,7 +88,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         body: {},
       );
 
-      if (response.statusCode != 200) {
+      if (response.statusCode != 201) {
         final data = json.decode(response.body);
         throw ServerException(data['message'] ?? 'Failed to follow user');
       }
@@ -101,7 +101,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
   Future<void> unfollowUser(String userId) async {
     try {
       final response = await _apiClient.delete(
-        '${ApiConstants.followEndpoint}/$userId',
+        '${ApiConstants.unfollowEndpoint}/$userId',
       );
 
       if (response.statusCode != 200) {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:friendzoneapp/domain/usecases/users/follow_user_usecase.dart';
+import 'package:friendzoneapp/domain/usecases/users/unfollow_user_usecase.dart';
 import '../../di/injection_container.dart' as di;
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
@@ -63,6 +65,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                           getCurrentUserUseCase: di.sl<GetCurrentUserUseCase>(),
                           logoutUseCase: di.sl<LogoutUseCase>(),
                           updateProfileUseCase: di.sl<UpdateProfileUseCase>(),
+                          followUserUseCase: di.sl<FollowUserUseCase>(),
+                          unfollowUserUseCase: di.sl<UnfollowUserUseCase>(),
                         ),
                       ),
                     ),

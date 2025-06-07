@@ -9,6 +9,8 @@ import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
+import '../../domain/usecases/users/follow_user_usecase.dart';
+import '../../domain/usecases/users/unfollow_user_usecase.dart';
 import '../blocs/notification/notification_bloc.dart';
 import '../theme/app_theme.dart';
 import '../widgets/notification_item.dart';
@@ -25,6 +27,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
   final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
   final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
   final UpdateProfileUseCase _updateProfileUseCase = sl<UpdateProfileUseCase>();
+  final FollowUserUseCase _followUserUseCase = sl<FollowUserUseCase>();
+  final UnfollowUserUseCase _unfollowUserUseCase = sl<UnfollowUserUseCase>();
   bool _isLoadingMore = false;
   bool _hasMorePages = true;
   late AnimationController _animationController;
@@ -83,6 +87,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
           logoutUseCase: _logoutUseCase,
           getUserByIdUseCase: _getUserByIdUseCase,
           updateProfileUseCase: _updateProfileUseCase,
+          followUserUseCase: _followUserUseCase,
+          unfollowUserUseCase: _unfollowUserUseCase,
           userId: userId,
         ),
       ),

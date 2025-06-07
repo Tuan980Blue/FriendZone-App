@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:friendzoneapp/domain/usecases/users/follow_user_usecase.dart';
+import 'package:friendzoneapp/domain/usecases/users/unfollow_user_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
@@ -16,6 +18,8 @@ class CustomSearchBar extends StatefulWidget {
   final GetCurrentUserUseCase getCurrentUserUseCase;
   final LogoutUseCase logoutUseCase;
   final UpdateProfileUseCase updateProfileUseCase;
+  final FollowUserUseCase followUserUseCase;
+  final UnfollowUserUseCase unfollowUserUseCase;
 
   const CustomSearchBar({
     super.key,
@@ -23,6 +27,8 @@ class CustomSearchBar extends StatefulWidget {
     required this.getCurrentUserUseCase,
     required this.logoutUseCase,
     required this.updateProfileUseCase,
+    required this.followUserUseCase,
+    required this.unfollowUserUseCase,
   });
 
   @override
@@ -231,6 +237,8 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                                 logoutUseCase: widget.logoutUseCase,
                                 getUserByIdUseCase: widget.getUserByIdUseCase,
                                 updateProfileUseCase: widget.updateProfileUseCase,
+                                followUserUseCase: widget.followUserUseCase,
+                                unfollowUserUseCase: widget.unfollowUserUseCase,
                                 userId: user.id,
                               ),
                             ),

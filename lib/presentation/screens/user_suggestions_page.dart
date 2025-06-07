@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
+import '../../domain/usecases/users/follow_user_usecase.dart';
 import '../../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
+import '../../domain/usecases/users/unfollow_user_usecase.dart';
 import '../widgets/user_card.dart';
 import 'profile_screen.dart';
 import '../../di/injection_container.dart';
@@ -29,6 +31,8 @@ class _UserSuggestionsPageState extends State<UserSuggestionsPage> {
   final GetCurrentUserUseCase _getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
   final LogoutUseCase _logoutUseCase = sl<LogoutUseCase>();
   final UpdateProfileUseCase _updateProfileUseCase = sl<UpdateProfileUseCase>();
+  final FollowUserUseCase _followUserUseCase = sl<FollowUserUseCase>();
+  final UnfollowUserUseCase _unfollowUserUseCase = sl<UnfollowUserUseCase>();
 
   @override
   void initState() {
@@ -77,6 +81,8 @@ class _UserSuggestionsPageState extends State<UserSuggestionsPage> {
           logoutUseCase: _logoutUseCase,
           getUserByIdUseCase: _getUserByIdUseCase,
           updateProfileUseCase: _updateProfileUseCase,
+          followUserUseCase: _followUserUseCase,
+          unfollowUserUseCase: _unfollowUserUseCase,
           userId: userId,
         ),
       ),
