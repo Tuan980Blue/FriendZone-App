@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 import '../../domain/usecases/auth/register_usecase.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
+import '../theme/app_page_transitions.dart';
 import '../theme/app_theme.dart';
 import 'home_page.dart';
 import 'login_screen.dart';
@@ -120,9 +121,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
       if (!mounted) return;
 
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const HomePage()),
-        (route) => false,
+      Navigator.of(context).pushReplacement(
+        AppPageTransitions.fade(const HomePage()),
       );
     } catch (e) {
       setState(() {
@@ -138,9 +138,9 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   }
 
   void _navigateToLogin() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => LoginScreen(
+    Navigator.of(context).push(
+      AppPageTransitions.slideLeft(
+        LoginScreen(
           loginUseCase: sl<LoginUseCase>(),
           googleSignInUseCase: sl<GoogleSignInUseCase>(),
         ),

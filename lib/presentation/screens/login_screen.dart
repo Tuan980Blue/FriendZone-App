@@ -12,6 +12,7 @@ import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/register_usecase.dart';
 import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_page_transitions.dart';
 import 'home_page.dart';
 import '../../di/injection_container.dart';
 
@@ -156,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       if (!mounted) return;
 
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        AppPageTransitions.fade(const HomePage()),
       );
 
     }
@@ -233,8 +234,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       if (result['requirePassword'] == true) {
         // New user needs to create password
         Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => GooglePasswordSetupScreen(
+          AppPageTransitions.slideUp(
+            GooglePasswordSetupScreen(
               userInfo: result['userInfo'],
               googleSignInUseCase: widget.googleSignInUseCase,
             ),
@@ -243,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       } else {
         // Existing user, navigate to home
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          AppPageTransitions.fade(const HomePage()),
         );
       }
     } catch (e, stack) {
@@ -263,8 +264,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   void _navigateToRegister() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => RegisterScreen(
+      AppPageTransitions.slideRight(
+        RegisterScreen(
           registerUseCase: _registerUseCase,
         ),
       ),
@@ -450,8 +451,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         child: TextButton(
                           onPressed: () {
                             Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const ForgotPasswordScreen(),
+                              AppPageTransitions.slideUp(
+                                const ForgotPasswordScreen(),
                               ),
                             );
                           },
