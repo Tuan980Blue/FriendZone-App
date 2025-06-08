@@ -155,22 +155,27 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(26),
                   decoration: BoxDecoration(
                     color: Colors.red.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.logout_rounded,
-                    size: 40,
-                    color: Colors.red,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Đăng xuất',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.logout_rounded,
+                        size: 40,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Đăng xuất',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -208,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       onPressed: () => Navigator.of(context).pop(true),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        backgroundColor: Colors.red,
+                        backgroundColor: AppTheme.accentPink,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
