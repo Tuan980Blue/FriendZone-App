@@ -18,6 +18,7 @@ class _OtpResetScreenState extends State<OtpResetScreen> with SingleTickerProvid
   final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   final _passwordController = TextEditingController();
+  final FocusNode _passwordFocusNode = FocusNode();
   bool _isLoading = false;
   String _error = '';
   bool _obscurePassword = true;
@@ -45,6 +46,7 @@ class _OtpResetScreenState extends State<OtpResetScreen> with SingleTickerProvid
     for (int i = 0; i < 6; i++) {
       _otpControllers[i].addListener(() {
         if (_otpControllers[i].text.length == 1 && i < 5) {
+          _focusNodes[i].unfocus();
           _focusNodes[i + 1].requestFocus();
         }
       });
@@ -60,6 +62,7 @@ class _OtpResetScreenState extends State<OtpResetScreen> with SingleTickerProvid
       node.dispose();
     }
     _passwordController.dispose();
+    _passwordFocusNode.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -132,7 +135,10 @@ class _OtpResetScreenState extends State<OtpResetScreen> with SingleTickerProvid
         for (int i = 0; i < 6; i++) {
           _otpControllers[i].text = otp[i];
         }
-        
+        // Unfocus all nodes before focusing the last field
+        for (var node in _focusNodes) {
+          node.unfocus();
+        }
         // Move focus to the last field
         _focusNodes[5].requestFocus();
       }
@@ -146,60 +152,113 @@ class _OtpResetScreenState extends State<OtpResetScreen> with SingleTickerProvid
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Enter 6-digit code',
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
+        // Header with icon and title
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF262626) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+              width: 1,
             ),
-            // Add paste button
-            TextButton.icon(
-              onPressed: _handlePaste,
-              icon: Icon(
-                Icons.paste_rounded,
-                size: 18,
-                color: const Color(0xFFE1306C),
-              ),
-              label: Text(
-                'Paste',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: const Color(0xFFE1306C),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                backgroundColor: const Color(0xFFE1306C).withOpacity(0.1),
-                shape: RoundedRectangleBorder(
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE1306C).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
+                child: const Icon(
+                  Icons.lock_clock_rounded,
+                  color: Color(0xFFE1306C),
+                  size: 20,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 4),
+                    Text(
+                      'We sent a 6-digit code to ${widget.email}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? Colors.grey[500] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Add paste button with improved style
+              Container(
+                decoration: BoxDecoration(
+
+                     color:  Color(0xFFE85385),
+
+
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _handlePaste,
+                    borderRadius: BorderRadius.circular(2),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.paste_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Paste',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
+        
+        // OTP Input Fields with improved design
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(6, (index) {
+            final isFocused = _focusNodes[index].hasFocus;
+            final hasValue = _otpControllers[index].text.isNotEmpty;
+            
             return Container(
-              width: 45,
-              height: 55,
+              width: 48,
+              height: 58,
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF262626) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _focusNodes[index].hasFocus
+                  color: isFocused
                       ? const Color(0xFFE1306C)
-                      : isDark ? Colors.grey[800]! : Colors.grey[200]!,
-                  width: 1.5,
+                      : hasValue
+                          ? const Color(0xFFE1306C).withOpacity(0.5)
+                          : isDark ? Colors.grey[800]! : Colors.grey[400]!,
+                  width: isFocused ? 2 : 1.5,
                 ),
-                boxShadow: _focusNodes[index].hasFocus
+                boxShadow: isFocused
                     ? [
                         BoxShadow(
                           color: const Color(0xFFE1306C).withOpacity(0.2),
@@ -219,30 +278,37 @@ class _OtpResetScreenState extends State<OtpResetScreen> with SingleTickerProvid
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : Colors.black,
+                  letterSpacing: 1,
                 ),
                 decoration: InputDecoration(
                   counterText: '',
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
+                  hintText: '•',
+                  hintStyle: TextStyle(
+                    fontSize: 24,
+                    color: isDark ? Colors.grey[600] : Colors.grey[400],
+                  ),
                 ),
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                 ],
                 onChanged: (value) {
                   if (value.length == 1 && index < 5) {
+                    _focusNodes[index].unfocus();
                     _focusNodes[index + 1].requestFocus();
                   }
                   if (value.isEmpty && index > 0) {
+                    _focusNodes[index].unfocus();
                     _focusNodes[index - 1].requestFocus();
                   }
+                  setState(() {}); // Trigger rebuild for visual feedback
                 },
                 onTap: () {
-                  // Clear the field when tapped if it's empty
                   if (_otpControllers[index].text.isEmpty) {
                     _otpControllers[index].clear();
                   }
                 },
-                // Add context menu for paste
                 contextMenuBuilder: (context, editableTextState) {
                   return AdaptiveTextSelectionToolbar.editableText(
                     editableTextState: editableTextState,
@@ -252,20 +318,249 @@ class _OtpResetScreenState extends State<OtpResetScreen> with SingleTickerProvid
             );
           }),
         ),
-        const SizedBox(height: 8),
-        // Add validation message
+        const SizedBox(height: 12),
+        
+        // Validation message with improved style
         if (_otpValue.length < 6 && _error.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              'Please enter all 6 digits',
-              style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                fontSize: 12,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[900] : Colors.grey[100],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
               ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 16,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Please enter all 6 digits',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
           ),
       ],
+    );
+  }
+
+  // Add new method for password input
+  Widget _buildPasswordInput() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isFocused = _passwordFocusNode.hasFocus;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Password header
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF262626) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE1306C).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.lock_reset_rounded,
+                  color: Color(0xFFE1306C),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Create New Password',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Choose a strong password to secure your account',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        // Password input field with improved design
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isFocused
+                  ? const Color(0xFFE1306C)
+                  : isDark ? Colors.grey[700]! : Colors.grey[400]!,
+              width: isFocused ? 2 : 1,
+            ),
+            boxShadow: isFocused
+                ? [
+              BoxShadow(
+                color: const Color(0xFFE1306C).withOpacity(0.15),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ]
+                : [],
+          ),
+          child: TextFormField(
+            controller: _passwordController,
+            focusNode: _passwordFocusNode,
+            obscureText: _obscurePassword,
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.3,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Enter your new password',
+              hintStyle: TextStyle(
+                color: isDark ? Colors.grey[500] : Colors.grey[500],
+                fontSize: 15,
+              ),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(left: 16, right: 12),
+                child: Icon(
+                  Icons.lock_outline_rounded,
+                  color: isFocused
+                      ? const Color(0xFFE1306C)
+                      : isDark ? Colors.grey[400] : Colors.grey[600],
+                  size: 22,
+                ),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                  color: isFocused
+                      ? const Color(0xFFE1306C)
+                      : isDark ? Colors.grey[400] : Colors.grey[600],
+                  size: 22,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 18,
+                horizontal: 0,
+              ),
+              isDense: true,
+            ),
+            onChanged: (value) {
+              setState(() {});
+            },
+          ),
+        ),
+
+
+        // Password requirements
+        if (_passwordController.text.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[900] : Colors.grey[100],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Password Requirements:',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.grey[300] : Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildRequirementItem(
+                  'At least 8 characters',
+                  _passwordController.text.length >= 8,
+                  isDark,
+                ),
+                _buildRequirementItem(
+                  'Include numbers',
+                  _passwordController.text.contains(RegExp(r'[0-9]')),
+                  isDark,
+                ),
+                _buildRequirementItem(
+                  'Include special characters',
+                  _passwordController.text.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')),
+                  isDark,
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  // Helper method for password requirements
+  Widget _buildRequirementItem(String text, bool isMet, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(
+            isMet ? Icons.check_circle_rounded : Icons.circle_outlined,
+            size: 16,
+            color: isMet
+                ? const Color(0xFFE1306C)
+                : isDark ? Colors.grey[600] : Colors.grey[400],
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: isMet
+                  ? const Color(0xFFE1306C)
+                  : isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -379,79 +674,17 @@ class _OtpResetScreenState extends State<OtpResetScreen> with SingleTickerProvid
                                     letterSpacing: 0.5,
                                   ),
                                 ),
-                                const SizedBox(height: 12),
-
-                                Text(
-                                  'We sent a 6-digit code to ${widget.email}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                    height: 1.5,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 2),
 
                           // Replace the old OTP input with the new one
                           _buildOtpInput(),
                           const SizedBox(height: 24),
 
                           // New Password Input
-                          Container(
-                            decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF262626) : Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
-                                width: 1,
-                              ),
-                            ),
-                            child: TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black,
-                                fontSize: 16,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'New Password',
-                                hintStyle: TextStyle(
-                                  color: isDark ? Colors.grey[400] : Colors.grey[500],
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.lock_outline_rounded,
-                                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                  size: 20,
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                    size: 20,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.length < 6) {
-                                  return 'Password must be at least 6 characters';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
+                          _buildPasswordInput(),
                           const SizedBox(height: 24),
 
                           // Error message
@@ -563,7 +796,7 @@ class _OtpResetScreenState extends State<OtpResetScreen> with SingleTickerProvid
 
           // Back button
           Positioned(
-            top: 16,
+            top: 56,
             left: 16,
             child: Container(
               decoration: BoxDecoration(
