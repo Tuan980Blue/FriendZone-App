@@ -483,12 +483,19 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                               Text(
                                 'Already have an account?',
                                 style: TextStyle(
-                                  color: AppTheme.textSecondary,
+                                  color: AppTheme.textPrimary,
                                 ),
                               ),
                               TextButton(
                                 onPressed: _navigateToLogin,
-                                child: const Text('Login'),
+                                child: Text(
+                                  'Log in',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.pink,
+                                  ),
+                                ),
                               ),
                             ],
                           ),

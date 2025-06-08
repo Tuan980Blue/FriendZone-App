@@ -28,6 +28,14 @@ class _GooglePasswordSetupScreenState extends State<GooglePasswordSetupScreen> {
   bool _obscureConfirmPassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(() {
+      setState(() {}); // Rebuild to update requirements UI
+    });
+  }
+
+  @override
   void dispose() {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -72,6 +80,33 @@ class _GooglePasswordSetupScreenState extends State<GooglePasswordSetupScreen> {
         });
       }
     }
+  }
+
+  Widget _buildRequirementItem(String text, bool isMet, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(
+            isMet ? Icons.check_circle : Icons.circle_outlined,
+            size: 16,
+            color: isMet 
+                ? Colors.green 
+                : (isDark ? Colors.grey[400] : Colors.grey[600]),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: isMet 
+                  ? Colors.green 
+                  : (isDark ? Colors.grey[400] : Colors.grey[600]),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -179,9 +214,9 @@ class _GooglePasswordSetupScreenState extends State<GooglePasswordSetupScreen> {
                     Text(
                       'Please create a password to continue creating your account.',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         color: AppTheme.textSecondary,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w400,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -211,7 +246,7 @@ class _GooglePasswordSetupScreenState extends State<GooglePasswordSetupScreen> {
                               fontWeight: FontWeight.w700,
                               color: isDarkMode
                                   ? AppTheme.darkModeText
-                                  : AppTheme.textPrimary,
+                                  : AppTheme.primaryBlue,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -228,7 +263,7 @@ class _GooglePasswordSetupScreenState extends State<GooglePasswordSetupScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
                     // Modern password field
                     Container(
                       decoration: BoxDecoration(
@@ -296,14 +331,20 @@ class _GooglePasswordSetupScreenState extends State<GooglePasswordSetupScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Please enter a password';
                           }
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
+                          if (value.length < 8) {
+                            return 'Password must be at least 8 characters';
+                          }
+                          if (!value.contains(RegExp(r'[0-9]'))) {
+                            return 'Password must include numbers';
+                          }
+                          if (!value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+                            return 'Password must include special characters';
                           }
                           return null;
                         },
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
                     // Modern confirm password field
                     Container(
                       decoration: BoxDecoration(
@@ -410,6 +451,51 @@ class _GooglePasswordSetupScreenState extends State<GooglePasswordSetupScreen> {
                           ],
                         ),
                       ),
+                    // Password requirements
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? const Color(0xFF2A2A2A).withOpacity(0.5)
+                            : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDarkMode
+                              ? Colors.grey[800]!
+                              : Colors.grey[300]!,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Password Requirements:',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildRequirementItem(
+                            'At least 8 characters',
+                            _passwordController.text.length >= 8,
+                            isDarkMode,
+                          ),
+                          _buildRequirementItem(
+                            'Include numbers',
+                            _passwordController.text.contains(RegExp(r'[0-9]')),
+                            isDarkMode,
+                          ),
+                          _buildRequirementItem(
+                            'Include special characters',
+                            _passwordController.text.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')),
+                            isDarkMode,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
                     // Modern gradient button matching login screen
                     Container(
                       margin: const EdgeInsets.only(top: 12, bottom: 16),

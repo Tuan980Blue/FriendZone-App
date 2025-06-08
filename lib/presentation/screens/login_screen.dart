@@ -580,10 +580,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
-                                Icons.g_mobiledata_rounded,
-                                size: 24,
-                                color: Colors.red,
+                              Image.asset(
+                                'assets/images/google_logo.png',
+                                height: 20,
+                                width: 20,
                               ),
                               const SizedBox(width: 12),
                               Text(
@@ -591,7 +591,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
-                                  color: Colors.black87,
+                                  color: Colors.black54,
                                 ),
                               ),
                             ],
@@ -607,12 +607,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           Text(
                             'Don\'t have an account?',
                             style: TextStyle(
-                              color: AppTheme.textSecondary,
+                              color: AppTheme.textPrimary,
                             ),
                           ),
                           TextButton(
                             onPressed: _navigateToRegister,
-                            child: const Text('Register'),
+                            child: Text(
+                              'Register',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.pink,
+                              ),
+                            ),
                           ),
                         ],
                       ),
