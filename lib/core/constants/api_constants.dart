@@ -18,4 +18,8 @@ class ApiConstants {
   // Follow endpoints
   static const String followEndpoint = '/follows/follow';
   static const String unfollowEndpoint = '/follows/unfollow';
+  
+  // Chat endpoints
+  static const String recentChatsEndpoint = '/chat/recent';
+  static const String directChatMessagesEndpoint = '/chat/direct';
 } 

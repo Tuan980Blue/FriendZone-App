@@ -42,6 +42,7 @@ class ApiClient {
             headers: headers,
           )
           .timeout(Duration(seconds: ApiConstants.timeoutDuration));
+      
       return response;
     } catch (e) {
       throw Exception('Network error occurred: $e');

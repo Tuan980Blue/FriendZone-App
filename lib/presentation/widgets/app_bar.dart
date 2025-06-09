@@ -10,6 +10,8 @@ import '../../domain/usecases/user/update_profile_usecase.dart';
 import '../theme/app_theme.dart';
 import '../blocs/notification/notification_bloc.dart';
 import '../blocs/search/search_bloc.dart';
+import '../blocs/chat/chat_bloc.dart';
+import '../screens/chat_wrapper_screen.dart';
 import 'search_bar.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -152,7 +154,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         : AppTheme.textPrimary,
                   ),
                   onPressed: () {
-                    // TODO: Implement message functionality
+                    // Navigate to chat screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider<ChatBloc>(
+                              create: (context) => di.sl<ChatBloc>(),
+                            ),
+                          ],
+                          child: const ChatDemoScreen(),
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),

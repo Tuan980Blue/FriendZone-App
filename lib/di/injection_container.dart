@@ -4,14 +4,17 @@ import '../data/datasources/remote/auth_remote_data_source.dart';
 import '../data/datasources/remote/post_remote_data_source.dart';
 import '../data/datasources/remote/user_remote_data_source.dart';
 import '../data/datasources/remote/notification_remote_data_source.dart';
+import '../data/datasources/remote/chat_remote_data_source.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import '../data/repositories/post_repository_impl.dart';
 import '../data/repositories/user_repository_impl.dart';
 import '../data/repositories/notification_repository_impl.dart';
+import '../data/repositories/chat_repository_impl.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/repositories/post_repository.dart';
 import '../domain/repositories/user_repository.dart';
 import '../domain/repositories/notification_repository.dart';
+import '../domain/repositories/chat_repository.dart';
 import '../domain/usecases/auth/login_usecase.dart';
 import '../domain/usecases/auth/register_usecase.dart';
 import '../domain/usecases/auth/get_current_user_usecase.dart';
@@ -25,7 +28,10 @@ import '../domain/usecases/posts/create_post_usecase.dart';
 import '../domain/usecases/posts/upload_image_usecase.dart';
 import '../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../domain/usecases/user/get_user_by_id_usecase.dart';
+import '../domain/usecases/chat/get_recent_chats_usecase.dart';
+import '../domain/usecases/chat/get_direct_chat_messages_usecase.dart';
 import '../presentation/blocs/notification/notification_bloc.dart';
+import '../presentation/blocs/chat/chat_bloc.dart';
 import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
 import '../presentation/blocs/search/search_bloc.dart';
@@ -51,6 +57,9 @@ Future<void> init() async {
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSourceImpl(apiClient: sl()),
   );
+  sl.registerLazySingleton<ChatRemoteDataSource>(
+    () => ChatRemoteDataSourceImpl(sl()),
+  );
 
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
@@ -64,6 +73,9 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton<ChatRepository>(
+    () => ChatRepositoryImpl(sl()),
   );
 
   // Use cases
@@ -92,6 +104,10 @@ Future<void> init() async {
   sl.registerLazySingleton(() => MarkAllNotificationsAsReadUseCase(sl()));
   sl.registerLazySingleton(() => GetUnreadNotificationsCountUseCase(sl()));
 
+  // Chat use cases
+  sl.registerLazySingleton(() => GetRecentChatsUseCase(sl()));
+  sl.registerLazySingleton(() => GetDirectChatMessagesUseCase(sl()));
+
   // BLoCs
   sl.registerFactory(
     () => NotificationBloc(
@@ -103,4 +119,11 @@ Future<void> init() async {
   );
   
   sl.registerFactory(() => SearchBloc(apiClient: sl()));
+  
+  sl.registerFactory(
+    () => ChatBloc(
+      getRecentChatsUseCase: sl(),
+      getDirectChatMessagesUseCase: sl(),
+    ),
+  );
 } 
