@@ -337,7 +337,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> with TickerProvid
             child: Column(
               children: [
                 EditProfileAvatarSection(user: widget.user),
-                
                 // Basic Information
                 EditProfileSectionCard(
                   title: 'Thông tin cơ bản',
@@ -374,7 +373,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with TickerProvid
                       label: 'Tiểu sử',
                       icon: Icons.description_outlined,
                       controller: bioController,
-                      maxLines: 4,
+                      maxLines: 1,
                     ),
                   ],
                 ),
@@ -393,9 +392,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> with TickerProvid
                             icon: Icons.people_outline_rounded,
                             value: selectedGender,
                             items: const [
-                              DropdownMenuItem(value: 'MALE', child: Text('Nam')),
-                              DropdownMenuItem(value: 'FEMALE', child: Text('Nữ')),
-                              DropdownMenuItem(value: 'OTHER', child: Text('Khác')),
+                              DropdownMenuItem(
+                                value: 'MALE',
+                                child: Text('Nam', style: TextStyle(color: Colors.pinkAccent)), // Màu xanh dương
+                              ),
+                              DropdownMenuItem(
+                                value: 'FEMALE',
+                                child: Text('Nữ', style: TextStyle(color: Colors.pinkAccent)), // Màu hồng
+                              ),
+                              DropdownMenuItem(
+                                value: 'OTHER',
+                                child: Text('Khác', style: TextStyle(color: Colors.pinkAccent),), // Màu xanh lá
+                              ),
                             ],
                             onChanged: (value) {
                               setState(() => selectedGender = value);
@@ -403,7 +411,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with TickerProvid
                             },
                           ),
                         ),
-                        const SizedBox(width: 20),
+                        const SizedBox(width: 15),
                         Expanded(
                           child: EditProfileFormFields.buildDateField(
                             selectedDate: selectedBirthDate,
