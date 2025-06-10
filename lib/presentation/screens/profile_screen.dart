@@ -15,7 +15,6 @@ import '../widgets/profile/profile_stats.dart';
 import '../widgets/profile/profile_personal_info.dart';
 import '../widgets/profile/profile_contact_info.dart';
 import '../widgets/profile/profile_account_info.dart';
-import '../widgets/profile/profile_edit_dialog.dart';
 import '../widgets/profile/profile_posts.dart';
 import '../theme/app_theme.dart';
 import 'change_password_screen.dart';
@@ -23,6 +22,7 @@ import '../theme/app_page_transitions.dart';
 import '../../domain/usecases/users/follow_user_usecase.dart';
 import '../../domain/usecases/users/unfollow_user_usecase.dart';
 import '../widgets/common/custom_snackbar.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final GetCurrentUserUseCase getCurrentUserUseCase;
@@ -266,19 +266,27 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   Future<void> _showEditProfileDialog() async {
     if (!isViewingOwnProfile || _user == null) return;
 
-    await showDialog(
-      context: context,
-      builder: (context) => ProfileEditDialog(
-        user: _user!,
-        updateProfileUseCase: widget.updateProfileUseCase,
-        onProfileUpdated: (updatedUser) {
-          setState(() {
-            _user = updatedUser;
-            _currentUser = updatedUser;
-          });
-        },
+    final result = await Navigator.of(context).push(
+      AppPageTransitions.slideRight(
+        EditProfileScreen(
+          user: _user!,
+          updateProfileUseCase: widget.updateProfileUseCase,
+          onProfileUpdated: (updatedUser) {
+            setState(() {
+              _user = updatedUser;
+              _currentUser = updatedUser;
+            });
+          },
+        ),
       ),
     );
+
+    // Handle result from edit screen
+    if (result == true) {
+      // Profile was successfully updated
+      // The onProfileUpdated callback already handled the state update
+      // We can add additional logic here if needed
+    }
   }
 
   Future<void> _handleFollow() async {
@@ -410,14 +418,28 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                     const SizedBox(height: 12),
                     // Action Buttons
                     if (isViewingOwnProfile)
-                      ElevatedButton.icon(
-                        onPressed: _showEditProfileDialog,
-                        icon: const Icon(Icons.edit, size: 18),
-                        label: const Text('Chỉnh sửa hồ sơ'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          backgroundColor: AppTheme.accentPink,
-                          foregroundColor: Colors.white,
+                      Container(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _showEditProfileDialog,
+                          icon: const Icon(Icons.edit_rounded, size: 18),
+                          label: const Text(
+                            'Chỉnh sửa hồ sơ',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            backgroundColor: AppTheme.accentPink,
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            shadowColor: AppTheme.accentPink.withOpacity(0.3),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       )
                     else
