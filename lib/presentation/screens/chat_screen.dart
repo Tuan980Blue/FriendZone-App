@@ -5,6 +5,7 @@ import '../blocs/chat/chat_bloc.dart';
 import '../blocs/chat/chat_event.dart';
 import '../blocs/chat/chat_state.dart';
 import '../widgets/chat_item_widget.dart';
+import '../theme/app_page_transitions.dart';
 import '../../domain/entities/chat.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
@@ -325,12 +326,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _navigateToChatDetail(Chat chat) {
-    // Navigate to direct chat messages screen
+    // Navigate to direct chat messages screen with professional chat transition
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => DirectChatMessagesScreen(
+      AppPageTransitions.chatTransition(
+        DirectChatMessagesScreen(
           userId: chat.receiverId == currentUserId ? chat.senderId : chat.receiverId,
           userName: chat.receiverId == currentUserId ? chat.sender.fullName : chat.receiver.fullName,
+          userAvatar: chat.receiverId == currentUserId ? chat.sender.avatar : chat.receiver.avatar,
         ),
       ),
     );
