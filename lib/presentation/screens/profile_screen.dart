@@ -406,38 +406,69 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       ),
                     ),
                     if (_user?.username != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        '@${_user!.username}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 16,
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.grey[300]!,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          '@${_user!.username}',
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     // Action Buttons
                     if (isViewingOwnProfile)
                       Container(
                         width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.accentPink,
+                              AppTheme.accentPink.withOpacity(0.9),
+                            ],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.accentPink.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
                         child: ElevatedButton.icon(
                           onPressed: _showEditProfileDialog,
-                          icon: const Icon(Icons.edit_rounded, size: 18),
+                          icon: const Icon(Icons.edit_rounded, size: 18, color: Colors.white),
                           label: const Text(
                             'Chỉnh sửa hồ sơ',
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
+                              color: Colors.white,
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                            backgroundColor: AppTheme.accentPink,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                            backgroundColor: Colors.transparent,
                             foregroundColor: Colors.white,
-                            elevation: 2,
-                            shadowColor: AppTheme.accentPink.withOpacity(0.3),
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                         ),
@@ -446,31 +477,102 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       Row(
                         children: [
                           Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _handleFollow,
-                              icon: Icon(
-                                _user!.isFollowing ? Icons.person_remove : Icons.person_add,
-                                size: 18,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: _user!.isFollowing 
+                                  ? LinearGradient(
+                                      colors: [
+                                        Colors.grey[300]!,
+                                        Colors.grey[200]!,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : LinearGradient(
+                                      colors: [
+                                        AppTheme.accentPink,
+                                        AppTheme.accentPink.withOpacity(0.9),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _user!.isFollowing 
+                                      ? Colors.grey.withOpacity(0.2)
+                                      : AppTheme.accentPink.withOpacity(0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
-                              label: Text(_user!.isFollowing ? 'Following' : 'Follow'),
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                backgroundColor: _user!.isFollowing ? Colors.grey[200] : AppTheme.accentPink,
-                                foregroundColor: _user!.isFollowing ? Colors.grey[800] : Colors.white,
-                                elevation: _user!.isFollowing ? 0 : 1,
+                              child: ElevatedButton.icon(
+                                onPressed: _handleFollow,
+                                icon: Icon(
+                                  _user!.isFollowing ? Icons.person_remove : Icons.person_add,
+                                  size: 18,
+                                  color: _user!.isFollowing ? Colors.grey[700] : Colors.white,
+                                ),
+                                label: Text(
+                                  _user!.isFollowing ? 'Following' : 'Follow',
+                                  style: TextStyle(
+                                    color: _user!.isFollowing ? Colors.grey[700] : Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  backgroundColor: Colors.transparent,
+                                  foregroundColor: _user!.isFollowing ? Colors.grey[700] : Colors.white,
+                                  elevation: 0,
+                                  shadowColor: Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 12),
                           Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _handleMessage,
-                              icon: const Icon(Icons.message, size: 18),
-                              label: const Text('Message'),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                foregroundColor: AppTheme.accentPink,
-                                side: const BorderSide(color: AppTheme.accentPink),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppTheme.accentPink,
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.accentPink.withOpacity(0.2),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: OutlinedButton.icon(
+                                onPressed: _handleMessage,
+                                icon: Icon(Icons.message, size: 18, color: AppTheme.accentPink),
+                                label: Text(
+                                  'Message',
+                                  style: TextStyle(
+                                    color: AppTheme.accentPink,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  backgroundColor: Colors.transparent,
+                                  foregroundColor: AppTheme.accentPink,
+                                  side: BorderSide.none,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
                               ),
                             ),
                           ),

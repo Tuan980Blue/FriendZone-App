@@ -265,7 +265,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with TickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
