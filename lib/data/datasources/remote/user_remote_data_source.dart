@@ -142,7 +142,7 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
         if (location != null) 'location': location,
         if (phoneNumber != null) 'phoneNumber': phoneNumber,
         if (gender != null) 'gender': gender,
-        if (birthDate != null) 'birthDate': birthDate.toIso8601String(),
+        if (birthDate != null) 'birthDate': '${birthDate.year}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}T00:00:00.000Z',
       };
 
       final response = await _apiClient.put(
