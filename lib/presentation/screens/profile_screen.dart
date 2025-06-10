@@ -512,12 +512,12 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                                 icon: Icon(
                                   _user!.isFollowing ? Icons.person_remove : Icons.person_add,
                                   size: 18,
-                                  color: _user!.isFollowing ? Colors.grey[700] : Colors.white,
+                                  color: _user!.isFollowing ? AppTheme.primaryBlue : Colors.white,
                                 ),
                                 label: Text(
                                   _user!.isFollowing ? 'Following' : 'Follow',
                                   style: TextStyle(
-                                    color: _user!.isFollowing ? Colors.grey[700] : Colors.white,
+                                    color: _user!.isFollowing ? AppTheme.primaryBlue : Colors.white,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
@@ -525,7 +525,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   backgroundColor: Colors.transparent,
-                                  foregroundColor: _user!.isFollowing ? Colors.grey[700] : Colors.white,
+                                  foregroundColor: _user!.isFollowing ? Colors.grey[400] : Colors.white,
                                   elevation: 0,
                                   shadowColor: Colors.transparent,
                                   shape: RoundedRectangleBorder(
