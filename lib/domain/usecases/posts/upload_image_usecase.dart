@@ -9,6 +9,7 @@ class UploadImageUseCase implements UseCase<String?, File> {
 
   @override
   Future<String?> call(File params) async {
-    return await _postRepository.uploadImage(params);
+    final result = await _postRepository.uploadImage(params);
+    return result;
   }
 } 
