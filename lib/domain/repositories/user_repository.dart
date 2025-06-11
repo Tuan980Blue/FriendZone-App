@@ -1,4 +1,5 @@
 import '../entities/user.dart';
+import '../entities/following_user.dart';
 
 abstract class UserRepository {
   Future<List<dynamic>> getUserSuggestions();
@@ -6,6 +7,8 @@ abstract class UserRepository {
   Future<User> getUserById(String userId);
   Future<void> followUser(String userId);
   Future<void> unfollowUser(String userId);
+  Future<List<FollowingUser>> getFollowingUsers();
+  Future<List<FollowingUser>> getFollowersUsers();
   Future<User> updateProfile({
     required String id,
     required String username,

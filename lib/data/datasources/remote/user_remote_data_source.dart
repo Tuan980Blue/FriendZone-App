@@ -3,6 +3,7 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../models/user_model.dart';
+import '../../models/following_user_model.dart';
 import 'package:intl/intl.dart';
 
 abstract class UserRemoteDataSource {
@@ -11,6 +12,8 @@ abstract class UserRemoteDataSource {
   Future<Map<String, dynamic>> getUserById(String userId);
   Future<void> followUser(String userId);
   Future<void> unfollowUser(String userId);
+  Future<List<FollowingUserModel>> getFollowingUsers();
+  Future<List<FollowingUserModel>> getFollowersUsers();
   Future<Map<String, dynamic>> updateProfile({
     required String id,
     required String username,
@@ -107,6 +110,44 @@ class UserRemoteDataSourceImpl implements UserRemoteDataSource {
       if (response.statusCode != 200) {
         final data = json.decode(response.body);
         throw ServerException(data['message'] ?? 'Failed to unfollow user');
+      }
+    } catch (e) {
+      throw ServerException('Network error occurred: $e');
+    }
+  }
+
+  @override
+  Future<List<FollowingUserModel>> getFollowingUsers() async {
+    try {
+      final response = await _apiClient.get(ApiConstants.followingEndpoint);
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        final List<dynamic> usersJson = data['data'];
+        return usersJson
+            .map((userJson) => FollowingUserModel.fromJson(userJson))
+            .toList();
+      } else {
+        throw ServerException(data['message'] ?? 'Failed to get following users');
+      }
+    } catch (e) {
+      throw ServerException('Network error occurred: $e');
+    }
+  }
+
+  @override
+  Future<List<FollowingUserModel>> getFollowersUsers() async {
+    try {
+      final response = await _apiClient.get(ApiConstants.followersEndpoint);
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        final List<dynamic> usersJson = data['data'];
+        return usersJson
+            .map((userJson) => FollowingUserModel.fromJson(userJson))
+            .toList();
+      } else {
+        throw ServerException(data['message'] ?? 'Failed to get followers users');
       }
     } catch (e) {
       throw ServerException('Network error occurred: $e');

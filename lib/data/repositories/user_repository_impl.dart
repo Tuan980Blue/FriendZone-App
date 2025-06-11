@@ -1,4 +1,5 @@
 import '../../domain/entities/user.dart';
+import '../../domain/entities/following_user.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../datasources/remote/user_remote_data_source.dart';
 
@@ -42,6 +43,16 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<void> unfollowUser(String userId) async {
     await _remoteDataSource.unfollowUser(userId);
+  }
+
+  @override
+  Future<List<FollowingUser>> getFollowingUsers() async {
+    return await _remoteDataSource.getFollowingUsers();
+  }
+
+  @override
+  Future<List<FollowingUser>> getFollowersUsers() async {
+    return await _remoteDataSource.getFollowersUsers();
   }
 
   @override

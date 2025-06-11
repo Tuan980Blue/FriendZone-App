@@ -496,7 +496,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
                                     color: _user!.isFollowing 
@@ -511,7 +511,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                                 onPressed: _handleFollow,
                                 icon: Icon(
                                   _user!.isFollowing ? Icons.person_remove : Icons.person_add,
-                                  size: 18,
+                                  size: 16,
                                   color: _user!.isFollowing ? AppTheme.primaryBlue : Colors.white,
                                 ),
                                 label: Text(
@@ -519,28 +519,29 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                                   style: TextStyle(
                                     color: _user!.isFollowing ? AppTheme.primaryBlue : Colors.white,
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                                    fontSize: 13,
                                   ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
                                   backgroundColor: Colors.transparent,
                                   foregroundColor: _user!.isFollowing ? Colors.grey[400] : Colors.white,
                                   elevation: 0,
                                   shadowColor: Colors.transparent,
+                                  minimumSize: const Size(0, 36),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: AppTheme.accentPink,
                                   width: 2,
@@ -555,22 +556,23 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                               ),
                               child: OutlinedButton.icon(
                                 onPressed: _handleMessage,
-                                icon: Icon(Icons.message, size: 18, color: AppTheme.accentPink),
+                                icon: Icon(Icons.message, size: 16, color: AppTheme.accentPink),
                                 label: Text(
                                   'Message',
                                   style: TextStyle(
                                     color: AppTheme.accentPink,
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                                    fontSize: 13,
                                   ),
                                 ),
                                 style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
                                   backgroundColor: Colors.transparent,
                                   foregroundColor: AppTheme.accentPink,
                                   side: BorderSide.none,
+                                  minimumSize: const Size(0, 36),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                               ),
@@ -584,7 +586,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             ],
           ),
           if (_user?.bio != null && _user!.bio!.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -601,7 +603,6 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               ),
             ),
           ],
-          const SizedBox(height: 16),
           // Stats
           ProfileStats(
             postsCount: _user?.postsCount ?? 0,
