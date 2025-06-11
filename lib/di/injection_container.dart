@@ -32,11 +32,15 @@ import '../domain/usecases/chat/get_recent_chats_usecase.dart';
 import '../domain/usecases/chat/get_direct_chat_messages_usecase.dart';
 import '../presentation/blocs/notification/notification_bloc.dart';
 import '../presentation/blocs/chat/chat_bloc.dart';
+import '../presentation/blocs/following/following_bloc.dart';
+import '../presentation/blocs/followers/followers_bloc.dart';
 import '../../domain/usecases/auth/google_sign_in_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
 import '../presentation/blocs/search/search_bloc.dart';
 import '../domain/usecases/users/follow_user_usecase.dart';
 import '../domain/usecases/users/unfollow_user_usecase.dart';
+import '../domain/usecases/users/get_following_users_usecase.dart';
+import '../domain/usecases/users/get_followers_users_usecase.dart';
 
 final sl = GetIt.instance;
 
@@ -97,6 +101,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => UpdateProfileUseCase(sl()));
   sl.registerLazySingleton(() => FollowUserUseCase(sl()));
   sl.registerLazySingleton(() => UnfollowUserUseCase(sl()));
+  sl.registerLazySingleton(() => GetFollowingUsersUseCase(sl()));
+  sl.registerLazySingleton(() => GetFollowersUsersUseCase(sl()));
 
   // Notification use cases
   sl.registerLazySingleton(() => GetNotificationsUseCase(sl()));
@@ -124,6 +130,18 @@ Future<void> init() async {
     () => ChatBloc(
       getRecentChatsUseCase: sl(),
       getDirectChatMessagesUseCase: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => FollowingBloc(
+      getFollowingUsersUseCase: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => FollowersBloc(
+      getFollowersUsersUseCase: sl(),
     ),
   );
 } 
