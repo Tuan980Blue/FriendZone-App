@@ -25,9 +25,10 @@ class PostRepositoryImpl implements PostRepository {
   @override
   Future<String?> uploadImage(File imageFile) async {
     try {
-      return await _remoteDataSource.uploadImage(imageFile);
+      final result = await _remoteDataSource.uploadImage(imageFile);
+      return result;
     } catch (e) {
-      print('Error in repository while uploading image: $e');
+      print('🔍 [ERROR] PostRepositoryImpl: Error type: ${e.runtimeType}');
       rethrow;
     }
   }
