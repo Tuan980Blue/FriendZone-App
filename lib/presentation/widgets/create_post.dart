@@ -69,7 +69,7 @@ class CreatePostEntry extends StatelessWidget {
                 );
               },
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
                     Container(
@@ -94,7 +94,7 @@ class CreatePostEntry extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade50,
                           borderRadius: BorderRadius.circular(24),
@@ -107,7 +107,7 @@ class CreatePostEntry extends StatelessWidget {
                           '${user.fullName.isNotEmpty ? user.fullName : user.username} ơi, bạn đang nghĩ gì thế?',
                           style: TextStyle(
                             color: Colors.grey.shade600,
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -115,14 +115,8 @@ class CreatePostEntry extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.blue.shade400,
-                            Colors.blue.shade600,
-                          ],
-                        ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
@@ -134,8 +128,8 @@ class CreatePostEntry extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.add_photo_alternate_outlined,
-                        color: Colors.white,
-                        size: 22,
+                        color: Colors.blue,
+                        size: 24,
                       ),
                     ),
                   ],
@@ -176,48 +170,160 @@ class _CreatePostModalState extends State<CreatePostModal> {
   Future<bool> _showExitConfirmationDialog() async {
     return await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          'Bỏ bài viết?',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: const Text(
-          'Bạn có nội dung chưa đăng. Bạn có chắc chắn muốn bỏ bài viết này không?',
-          style: TextStyle(
-            fontSize: 15,
-            color: Colors.black87,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              'Tiếp tục',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.w600,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (context) => TweenAnimationBuilder<double>(
+        duration: const Duration(milliseconds: 200),
+        tween: Tween(begin: 0.0, end: 1.0),
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: 0.8 + (0.2 * value),
+            child: Opacity(
+              opacity: value,
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header with icon
+                      Container(
+                        padding: const EdgeInsets.only(top: 24, bottom: 16),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.red.shade600,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Bỏ bài viết?',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.grey.shade800,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Text(
+                                'Bạn có nội dung chưa đăng. Bạn có chắc chắn muốn bỏ bài viết này không?',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.grey.shade600,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Divider
+                      Container(
+                        height: 1,
+                        color: Colors.grey.shade100,
+                      ),
+                      // Action buttons
+                      Row(
+                        children: [
+                          // Cancel button
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => Navigator.of(context).pop(false),
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(20),
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  child: Text(
+                                    'Tiếp tục',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.blue.shade600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Vertical divider
+                          Container(
+                            width: 1,
+                            height: 50,
+                            color: Colors.grey.shade100,
+                          ),
+                          // Confirm button
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => Navigator.of(context).pop(true),
+                                borderRadius: const BorderRadius.only(
+                                  bottomRight: Radius.circular(20),
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  child: Text(
+                                    'Bỏ bài viết',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.red.shade600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Bỏ bài viết',
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     ) ?? false;
+  }
+
+  Future<void> _handleClose() async {
+    if (_hasUnsavedContent) {
+      final shouldExit = await _showExitConfirmationDialog();
+      if (shouldExit) {
+        Navigator.of(context).pop();
+      }
+    } else {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -251,15 +357,24 @@ class _CreatePostModalState extends State<CreatePostModal> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
+                    color: Colors.white,
                     border: Border(
                       bottom: BorderSide(
                         color: Colors.grey.shade100,
                         width: 1,
                       ),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
+                      // Close button
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.grey.shade50,
@@ -269,38 +384,35 @@ class _CreatePostModalState extends State<CreatePostModal> {
                             width: 1,
                           ),
                         ),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.close,
-                            color: Colors.grey.shade700,
-                            size: 22,
-                          ),
-                          onPressed: () async {
-                            if (_hasUnsavedContent) {
-                              final shouldExit = await _showExitConfirmationDialog();
-                              if (shouldExit) {
-                                Navigator.of(context).pop();
-                              }
-                            } else {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          style: IconButton.styleFrom(
-                            padding: const EdgeInsets.all(8),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: _handleClose,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.close,
+                                color: Colors.grey.shade700,
+                                size: 22,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                       const Spacer(),
+                      // Title
                       Text(
                         'Tạo bài viết',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Colors.grey.shade800,
                         ),
                       ),
                       const Spacer(),
-                      const SizedBox(width: 48), // Balance the close button
+                      // Balance the close button
+                      const SizedBox(width: 48),
                     ],
                   ),
                 ),
@@ -309,6 +421,7 @@ class _CreatePostModalState extends State<CreatePostModal> {
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Row(
                     children: [
+                      // User avatar
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
@@ -316,6 +429,13 @@ class _CreatePostModalState extends State<CreatePostModal> {
                             color: Colors.grey.shade200,
                             width: 2,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: CircleAvatar(
                           backgroundImage: widget.user.avatar != null && widget.user.avatar!.isNotEmpty
@@ -329,6 +449,7 @@ class _CreatePostModalState extends State<CreatePostModal> {
                         ),
                       ),
                       const SizedBox(width: 12),
+                      // User info and privacy selector
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,7 +496,7 @@ class _PrivacySelectorState extends State<PrivacySelector> {
     {
       'name': 'Công khai',
       'icon': Icons.public,
-      'color': Colors.green,
+      'color': Colors.pink,
       'description': 'Mọi người có thể xem'
     },
     {
@@ -387,7 +508,7 @@ class _PrivacySelectorState extends State<PrivacySelector> {
     {
       'name': 'Chỉ mình tôi',
       'icon': Icons.lock,
-      'color': Colors.red,
+      'color': Colors.black54,
       'description': 'Chỉ bạn có thể xem'
     },
   ];
@@ -401,14 +522,21 @@ class _PrivacySelectorState extends State<PrivacySelector> {
     return GestureDetector(
       onTap: () => _showPrivacyDialog(),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: Colors.grey.shade200,
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -442,87 +570,143 @@ class _PrivacySelectorState extends State<PrivacySelector> {
   void _showPrivacyDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          'Ai có thể xem bài viết này?',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: _privacyOptions.map((option) {
-            final isSelected = option['name'] == _selectedPrivacy;
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: () {
-                    setState(() {
-                      _selectedPrivacy = option['name'];
-                    });
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.blue.shade50 : Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? Colors.blue.shade200 : Colors.grey.shade200,
-                        width: 1,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (context) => TweenAnimationBuilder<double>(
+        duration: const Duration(milliseconds: 200),
+        tween: Tween(begin: 0.0, end: 1.0),
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: 0.8 + (0.2 * value),
+            child: Opacity(
+              opacity: value,
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          option['icon'],
-                          color: option['color'],
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                option['name'],
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: isSelected ? Colors.blue.shade700 : Colors.black87,
-                                ),
-                              ),
-                              Text(
-                                option['description'],
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.only(top: 24, bottom: 16),
+                        child: Text(
+                          'Ai có thể xem bài viết này?',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade800,
                           ),
                         ),
-                        if (isSelected)
-                          Icon(
-                            Icons.check_circle,
-                            color: Colors.blue.shade600,
-                            size: 20,
+                      ),
+                      // Divider
+                      Container(
+                        height: 1,
+                        color: Colors.grey.shade100,
+                      ),
+                      // Options
+                      ..._privacyOptions.map((option) {
+                        final isSelected = option['name'] == _selectedPrivacy;
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                setState(() {
+                                  _selectedPrivacy = option['name'];
+                                });
+                                Navigator.of(context).pop();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Colors.blue.shade50 : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected ? Colors.blue.shade200 : Colors.grey.shade200,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: option['color'].withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        option['icon'],
+                                        color: option['color'],
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            option['name'],
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: isSelected ? Colors.blue.shade700 : Colors.black87,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            option['description'],
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.shade600,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
-                      ],
-                    ),
+                        );
+                      }).toList(),
+                      const SizedBox(height: 16),
+                    ],
                   ),
                 ),
               ),
-            );
-          }).toList(),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -696,14 +880,16 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Handle bar
             Container(
               margin: const EdgeInsets.only(top: 12),
               width: 40,
@@ -713,40 +899,49 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
+            // Title
             Text(
               'Chọn ảnh',
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
                 color: Colors.grey.shade800,
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildImageSourceOption(
-                  icon: Icons.camera_alt,
-                  label: 'Chụp ảnh',
-                  color: Colors.blue,
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _takePhoto();
-                  },
-                ),
-                _buildImageSourceOption(
-                  icon: Icons.photo_library,
-                  label: 'Thư viện',
-                  color: Colors.green,
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImages();
-                  },
-                ),
-              ],
+            const SizedBox(height: 24),
+            // Options
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildImageSourceOption(
+                      icon: Icons.camera_alt,
+                      label: 'Chụp ảnh',
+                      color: Colors.blue,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        _takePhoto();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildImageSourceOption(
+                      icon: Icons.photo_library,
+                      label: 'Thư viện',
+                      color: Colors.green,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        _pickImages();
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -762,29 +957,44 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: color.withOpacity(0.2),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: 32,
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               label,
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: 15,
               ),
             ),
           ],
@@ -797,70 +1007,215 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
     // Mock location picker - in real app, integrate with Google Places API
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          'Chọn vị trí',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (context) => TweenAnimationBuilder<double>(
+        duration: const Duration(milliseconds: 200),
+        tween: Tween(begin: 0.0, end: 1.0),
+        builder: (context, value, child) {
+          return Transform.scale(
+            scale: 0.8 + (0.2 * value),
+            child: Opacity(
+              opacity: value,
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.only(top: 24, bottom: 16),
+                        child: Text(
+                          'Chọn vị trí',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                      ),
+                      // Divider
+                      Container(
+                        height: 1,
+                        color: Colors.grey.shade100,
+                      ),
+                      // Location options
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 300),
+                        child: ListView(
+                          shrinkWrap: true,
+                          children: [
+                            _buildLocationOption(
+                              'Hà Nội, Việt Nam',
+                              'Thủ đô Việt Nam',
+                              onTap: () {
+                                setState(() {
+                                  _selectedLocation = 'Hà Nội, Việt Nam';
+                                });
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            _buildLocationOption(
+                              'TP. Hồ Chí Minh, Việt Nam',
+                              'Thành phố lớn nhất Việt Nam',
+                              onTap: () {
+                                setState(() {
+                                  _selectedLocation = 'TP. Hồ Chí Minh, Việt Nam';
+                                });
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            _buildLocationOption(
+                              'Đà Nẵng, Việt Nam',
+                              'Thành phố đáng sống',
+                              onTap: () {
+                                setState(() {
+                                  _selectedLocation = 'Đà Nẵng, Việt Nam';
+                                });
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Divider
+                      Container(
+                        height: 1,
+                        color: Colors.grey.shade100,
+                      ),
+                      // Action buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedLocation = null;
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(20),
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  child: Text(
+                                    'Xóa vị trí',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.red.shade600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 1,
+                            height: 50,
+                            color: Colors.grey.shade100,
+                          ),
+                          Expanded(
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => Navigator.of(context).pop(),
+                                borderRadius: const BorderRadius.only(
+                                  bottomRight: Radius.circular(20),
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  child: Text(
+                                    'Hủy',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLocationOption(String title, String subtitle, {required VoidCallback onTap}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.location_on,
+                  color: Colors.red.shade600,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.location_on, color: Colors.red.shade600),
-              title: const Text('Hà Nội, Việt Nam'),
-              subtitle: const Text('Thủ đô Việt Nam'),
-              onTap: () {
-                setState(() {
-                  _selectedLocation = 'Hà Nội, Việt Nam';
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.location_on, color: Colors.red.shade600),
-              title: const Text('TP. Hồ Chí Minh, Việt Nam'),
-              subtitle: const Text('Thành phố lớn nhất Việt Nam'),
-              onTap: () {
-                setState(() {
-                  _selectedLocation = 'TP. Hồ Chí Minh, Việt Nam';
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.location_on, color: Colors.red.shade600),
-              title: const Text('Đà Nẵng, Việt Nam'),
-              subtitle: const Text('Thành phố đáng sống'),
-              onTap: () {
-                setState(() {
-                  _selectedLocation = 'Đà Nẵng, Việt Nam';
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _selectedLocation = null;
-              });
-              Navigator.of(context).pop();
-            },
-            child: const Text('Xóa vị trí'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Hủy'),
-          ),
-        ],
       ),
     );
   }
@@ -1098,6 +1453,13 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                 width: 1,
               ),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
           ),
           child: Column(
             children: [
@@ -1109,19 +1471,26 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.grey.shade200,
                           width: 1,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                           onTap: _isLoading ? null : _showImageSourceDialog,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 14),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
@@ -1131,7 +1500,7 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                                   color: Colors.blue.shade600,
                                   size: 20,
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 8),
                                 Text(
                                   'Ảnh',
                                   style: TextStyle(
@@ -1153,16 +1522,23 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.grey.shade200,
                           width: 1,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                           onTap: () {
                             setState(() {
                               _showEmojiPicker = !_showEmojiPicker;
@@ -1172,7 +1548,7 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                             }
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 14),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
@@ -1182,7 +1558,7 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                                   color: Colors.orange.shade600,
                                   size: 20,
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 8),
                                 Text(
                                   'Cảm xúc',
                                   style: TextStyle(
@@ -1204,19 +1580,26 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.grey.shade200,
                           width: 1,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                           onTap: _showLocationPicker,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 14),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
@@ -1226,7 +1609,7 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                                   color: Colors.red.shade600,
                                   size: 20,
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 8),
                                 Text(
                                   'Vị trí',
                                   style: TextStyle(
@@ -1255,24 +1638,30 @@ class _CreatePostWidgetState extends State<CreatePostWidget> {
                             )
                           : null,
                       color: hasContent ? null : Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: hasContent
                           ? [
                               BoxShadow(
                                 color: Colors.blue.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
                               ),
                             ]
-                          : null,
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.03),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                     ),
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         onTap: _isLoading || !hasContent ? null : _createPost,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                           child: _isLoading
                               ? const SizedBox(
                                   height: 20,
