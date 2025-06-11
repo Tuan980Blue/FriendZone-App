@@ -11,7 +11,8 @@ import '../../domain/entities/user.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../di/injection_container.dart';
 import 'dart:convert';
-import 'direct_chat_messages_screen.dart';
+import 'chat_direct_messages_screen.dart';
+import 'chat_new_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -28,7 +29,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   bool _isSearching = false;
   String _searchQuery = '';
   String _selectedFilter = 'all'; // 'all', 'unread', 'online'
-  
+
   // Animation controllers
   late AnimationController _fabAnimationController;
   late AnimationController _searchAnimationController;
@@ -51,7 +52,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       vsync: this,
     );
     _fabAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fabAnimationController, curve: Curves.elasticOut),
+      CurvedAnimation(
+          parent: _fabAnimationController, curve: Curves.elasticOut),
     );
 
     // Search Animation
@@ -60,7 +62,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       vsync: this,
     );
     _searchAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _searchAnimationController, curve: Curves.easeInOut),
+      CurvedAnimation(
+          parent: _searchAnimationController, curve: Curves.easeInOut),
     );
 
     // Title Animation
@@ -69,7 +72,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
       vsync: this,
     );
     _titleAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(parent: _titleAnimationController, curve: Curves.easeInOut),
+      CurvedAnimation(
+          parent: _titleAnimationController, curve: Curves.easeInOut),
     );
 
     _fabAnimationController.forward();
@@ -89,9 +93,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     try {
       // Get GetCurrentUserUseCase from dependency injection
       final getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
-      
+
       final user = await getCurrentUserUseCase();
-      
+
       setState(() {
         currentUser = user;
         currentUserId = user.id;
@@ -106,7 +110,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userData = prefs.getString('user_data');
-      
+
       if (userData != null) {
         try {
           final Map<String, dynamic> userJson = json.decode(userData);
@@ -160,11 +164,10 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
       filteredChats = filteredChats.where((chat) {
-        final otherUser = chat.receiverId == currentUserId 
-            ? chat.sender 
-            : chat.receiver;
+        final otherUser =
+            chat.receiverId == currentUserId ? chat.sender : chat.receiver;
         return otherUser.fullName.toLowerCase().contains(_searchQuery) ||
-               otherUser.username.toLowerCase().contains(_searchQuery);
+            otherUser.username.toLowerCase().contains(_searchQuery);
       }).toList();
     }
 
@@ -249,138 +252,167 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
+      surfaceTintColor: Colors.transparent,
       centerTitle: true,
       title: AnimatedSwitcher(
-        duration: Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 200),
         child: _isSearching
-            ? TextField(
-                key: ValueKey('searchBar'),
-                controller: _searchController,
-                autofocus: true,
-                onChanged: _onSearchChanged,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                decoration: InputDecoration(
-                  hintText: 'Tìm kiếm chat...',
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(color: Colors.grey),
+            ? Expanded(
+                child: Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.blue.shade200,
+                      width: 1,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    onChanged: _onSearchChanged,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black87,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Tìm kiếm chat...',
+                      hintStyle: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                      isDense: true,
+                    ),
+                  ),
                 ),
               )
-            : Text(
+            : const Text(
                 'Chat',
                 key: ValueKey('title'),
                 style: TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A1A1A),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.pinkAccent,
                 ),
               ),
       ),
       leading: _isSearching
           ? IconButton(
-              icon: Icon(Icons.close, color: Colors.black87),
+              icon: const Icon(
+                Icons.close,
+                color: Colors.black87,
+                size: 24,
+              ),
               onPressed: _toggleSearch,
             )
           : null,
       actions: [
         if (!_isSearching)
           IconButton(
-            icon: Icon(Icons.search, color: Colors.black87),
+            icon: const Icon(
+              Icons.search,
+              color: Colors.black87,
+              size: 24,
+            ),
             onPressed: _toggleSearch,
           ),
-        IconButton(
-          icon: Icon(Icons.add, color: Colors.black87),
-          onPressed: () {
-            // TODO: Navigate to new message screen
-          },
-        ),
-        Container(
-          margin: const EdgeInsets.only(right: 2),
-          child: PopupMenuButton<String>(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.more_vert, color: Color(0xFF1A1A1A), size: 20),
+        if (!_isSearching)
+          IconButton(
+            icon: const Icon(
+              Icons.add,
+              color: Colors.black87,
+              size: 24,
             ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 8,
-            onSelected: (value) {
-              switch (value) {
-                case 'mark_all_read':
-                  // TODO: Implement mark all as read
-                  break;
-                case 'clear_all':
-                  // TODO: Implement clear all chats
-                  break;
-                case 'settings':
-                  // TODO: Navigate to chat settings
-                  break;
-              }
+            onPressed: () {
+              Navigator.of(context).push(
+                AppPageTransitions.slideUp(
+                  const NewMessageScreen(),
+                ),
+              );
             },
-            itemBuilder: (context) => [
-              _buildPopupMenuItem(
-                'mark_all_read',
-                Icons.mark_email_read,
-                'Đánh dấu tất cả đã đọc',
-                Colors.blue,
-              ),
-              _buildPopupMenuItem(
-                'clear_all',
-                Icons.clear_all,
-                'Xóa tất cả chat',
-                Colors.red,
-              ),
-              _buildPopupMenuItem(
-                'settings',
-                Icons.settings,
-                'Cài đặt chat',
-                Colors.grey,
-              ),
-            ],
           ),
+        PopupMenuButton<String>(
+          icon: const Icon(
+            Icons.more_vert,
+            color: Colors.black87,
+            size: 24,
+          ),
+          offset: const Offset(0, 40),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 4,
+          onSelected: (value) {
+            switch (value) {
+              case 'mark_all_read':
+                // TODO: Implement mark all as read
+                break;
+              case 'clear_all':
+                // TODO: Implement clear all chats
+                break;
+              case 'settings':
+                // TODO: Navigate to chat settings
+                break;
+            }
+          },
+          itemBuilder: (context) => [
+            _buildPopupMenuItem(
+              'mark_all_read',
+              Icons.mark_email_read,
+              'Đánh dấu tất cả đã đọc',
+            ),
+            _buildPopupMenuItem(
+              'clear_all',
+              Icons.clear_all,
+              'Xóa tất cả chat',
+            ),
+            _buildPopupMenuItem(
+              'settings',
+              Icons.settings,
+              'Cài đặt chat',
+            ),
+          ],
         ),
       ],
     );
   }
 
-  PopupMenuItem<String> _buildPopupMenuItem(String value, IconData icon, String text, Color color) {
+  PopupMenuItem<String> _buildPopupMenuItem(
+      String value, IconData icon, String text) {
     return PopupMenuItem(
       value: value,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, size: 18, color: color),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: Colors.black87,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Colors.black87,
             ),
-            const SizedBox(width: 12),
-            Text(
-              text,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildUserHeader() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -429,7 +461,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       : null,
                   backgroundColor: Colors.blue.shade100,
                   child: currentUser!.avatar == null
-                      ? Icon(Icons.person, size: 28, color: Colors.blue.shade600)
+                      ? Icon(Icons.person,
+                          size: 28, color: Colors.blue.shade600)
                       : null,
                 ),
               ),
@@ -473,7 +506,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.green.shade100,
                         borderRadius: BorderRadius.circular(12),
@@ -619,14 +653,16 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               ],
             ),
             child: Icon(
-              _searchQuery.isNotEmpty ? Icons.search_off : Icons.chat_bubble_outline,
+              _searchQuery.isNotEmpty
+                  ? Icons.search_off
+                  : Icons.chat_bubble_outline,
               size: 80,
               color: Colors.blue.shade400,
             ),
           ),
           const SizedBox(height: 32),
           Text(
-            _searchQuery.isNotEmpty 
+            _searchQuery.isNotEmpty
                 ? 'Không tìm thấy kết quả'
                 : 'Chưa có tin nhắn nào',
             style: const TextStyle(
@@ -684,7 +720,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
@@ -707,7 +744,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 ),
               ),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -814,7 +852,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
@@ -851,9 +890,13 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         ),
         child: FloatingActionButton(
           onPressed: () {
-            // TODO: Navigate to new message screen
+            Navigator.of(context).push(
+              AppPageTransitions.slideUp(
+                const NewMessageScreen(),
+              ),
+            );
           },
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.pink[400],
           foregroundColor: Colors.white,
           elevation: 0,
           child: const Icon(Icons.add, size: 34),
@@ -867,9 +910,15 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     Navigator.of(context).push(
       AppPageTransitions.chatTransition(
         DirectChatMessagesScreen(
-          userId: chat.receiverId == currentUserId ? chat.senderId : chat.receiverId,
-          userName: chat.receiverId == currentUserId ? chat.sender.fullName : chat.receiver.fullName,
-          userAvatar: chat.receiverId == currentUserId ? chat.sender.avatar : chat.receiver.avatar,
+          userId: chat.receiverId == currentUserId
+              ? chat.senderId
+              : chat.receiverId,
+          userName: chat.receiverId == currentUserId
+              ? chat.sender.fullName
+              : chat.receiver.fullName,
+          userAvatar: chat.receiverId == currentUserId
+              ? chat.sender.avatar
+              : chat.receiver.avatar,
         ),
       ),
     );
