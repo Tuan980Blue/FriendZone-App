@@ -1,7 +1,7 @@
 <h1 align="center">❤️ FriendZone App ❤️</h1>
 
 <p align="center">
-  <a href="https://anhtuandev.id.vn/" target="_blank"><strong>🔗 Xem bản demo web tại đây</strong></a>
+  <a href="https://anhtuandev.id.vn/" target="_blank"><strong>🔗 Xem bản preview web tại đây</strong></a>
 </p>
 
 ---
