@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:friendzoneapp/presentation/widgets/story/create_story.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/usecases/posts/get_posts_usecase.dart';
 import '../widgets/post_card.dart';
 import '../widgets/create_post.dart';
+import '../widgets/story/story_card.dart';
 
 class PostsPage extends StatefulWidget {
   final GetPostsUseCase getPostsUseCase;
@@ -23,6 +25,18 @@ class _PostsPageState extends State<PostsPage> {
   bool hasMore = true;
   int currentPage = 1;
   String error = '';
+
+  // Sample stories data - replace with your actual data source
+  final List<Map<String, dynamic>> stories = [
+    {
+      'userImageUrl': 'https://example.com/avatar1.jpg',
+      'userName': 'User 1',
+    },
+    {
+      'userImageUrl': 'https://example.com/avatar2.jpg',
+      'userName': 'User 2',
+    },
+  ];
 
   @override
   void initState() {
@@ -54,14 +68,14 @@ class _PostsPageState extends State<PostsPage> {
     });
 
     try {
-      final posts = await widget.getPostsUseCase(currentPage, 9);
+      final newPosts = await widget.getPostsUseCase(currentPage, 9);
 
       if (!mounted) return;
 
       setState(() {
-        this.posts.addAll(posts);
+        posts.addAll(newPosts);
         currentPage++;
-        hasMore = posts.isNotEmpty;
+        hasMore = newPosts.isNotEmpty;
         isLoading = false;
       });
     } catch (e) {
@@ -71,6 +85,11 @@ class _PostsPageState extends State<PostsPage> {
         isLoading = false;
       });
     }
+  }
+
+  void _handleCreateStory() {
+    // Implement your story creation logic here
+    debugPrint('Create story tapped');
   }
 
   void _refreshPosts() {
@@ -91,34 +110,60 @@ class _PostsPageState extends State<PostsPage> {
         },
         child: posts.isEmpty && !isLoading
             ? Center(
-                child: error.isNotEmpty
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            error,
-                            style: const TextStyle(color: Colors.red),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _refreshPosts,
-                            child: const Text('Retry'),
-                          ),
-                        ],
-                      )
-                    : const CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                controller: _scrollController,
-                itemCount: posts.length + (hasMore ? 1 : 0) + 1, // +1 for CreatePostWidget
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return const CreatePostEntry();
-                  }
-                  
-                  final postIndex = index - 1;
-                  if (postIndex == posts.length) {
+          child: error.isNotEmpty
+              ? Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                error,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _refreshPosts,
+                child: const Text('Retry'),
+              ),
+            ],
+          )
+              : const CircularProgressIndicator(),
+        ) : CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            // Create Post Entry
+            const SliverToBoxAdapter(
+              child: CreatePostEntry(),
+            ),
+
+            SliverToBoxAdapter(
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: stories.length + 1, // +1 for CreateStory
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return CreateStoryEntry(
+                          onTap: _handleCreateStory,
+                          text: 'Your Story',
+                        );
+                      }
+                      final story = stories[index - 1];
+                      return null;
+                    },
+                  ),
+                ),
+              ),
+            ),
+
+            // Posts List
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                  if (index == posts.length && hasMore) {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
@@ -126,11 +171,14 @@ class _PostsPageState extends State<PostsPage> {
                       ),
                     );
                   }
-
-                  return PostCard(post: posts[postIndex]);
+                  return PostCard(post: posts[index]);
                 },
+                childCount: posts.length + (hasMore ? 1 : 0),
               ),
+            ),
+          ],
+        ),
       ),
     );
   }
-} 
+}
