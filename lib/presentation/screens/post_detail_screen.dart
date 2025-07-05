@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:friendzoneapp/presentation/screens/profile_screen.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:intl/intl.dart';
+import 'package:friendzoneapp/presentation/theme/app_theme.dart';
+import 'package:friendzoneapp/presentation/screens/profile_screen.dart';
 import 'package:friendzoneapp/presentation/widgets/post_likes_dialog.dart';
 import 'package:friendzoneapp/presentation/widgets/post_comments_section.dart';
-import 'package:flutter/services.dart';
-import 'package:shimmer/shimmer.dart';
-
 import '../../di/injection_container.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
@@ -17,7 +17,6 @@ import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
 import '../../domain/usecases/users/follow_user_usecase.dart';
 import '../../domain/usecases/users/unfollow_user_usecase.dart';
-
 
 class PostDetailScreen extends StatefulWidget {
   final String postId;
@@ -41,44 +40,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
   String? authToken;
   final TextEditingController _commentController = TextEditingController();
   bool isSubmittingComment = false;
+  List<String> commentSuggestions = [];
+  bool isLoadingSuggestions = false;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   final ScrollController _scrollController = ScrollController();
   bool _showAppBarTitle = false;
 
-  void _navigateToUserProfile(String userId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ProfileScreen(
-          getCurrentUserUseCase: _getCurrentUserUseCase,
-          logoutUseCase: _logoutUseCase,
-          getUserByIdUseCase: _getUserByIdUseCase,
-          updateProfileUseCase: _updateProfileUseCase,
-          followUserUseCase: _followUserUseCase,
-          unfollowUserUseCase: _unfollowUserUseCase,
-          userId: userId,
-        ),
-      ),
-    );
-  }
+  // Gemini API Key (hardcoded - không khuyến nghị cho môi trường sản xuất)
+  static const String _geminiApiKey = 'AIzaSyD0Y1RZNI-PBAsMNtZhDGfFKWefYIa9Wac';
 
   @override
   void initState() {
     super.initState();
     _loadAuthToken();
     fetchPost();
-    
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
-    
     _scrollController.addListener(_onScroll);
     _animationController.forward();
   }
@@ -104,9 +88,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
     setState(() {
       authToken = prefs.getString('auth_token');
     });
+    if (postData?['content'] != null && mounted) {
+      _fetchCommentSuggestions(postData!['content']);
+    }
   }
 
   Future<void> fetchPost() async {
+    if (!mounted) return;
     setState(() {
       isLoading = true;
       error = null;
@@ -124,28 +112,129 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
       if (response.statusCode == 200) {
         final jsonBody = json.decode(response.body);
         if (jsonBody['success'] == true) {
-          setState(() {
-            postData = jsonBody['data'];
-            isLoading = false;
-          });
+          if (mounted) {
+            setState(() {
+              postData = jsonBody['data'];
+              isLoading = false;
+            });
+          }
+          if (postData!['content'] != null && mounted) {
+            _fetchCommentSuggestions(postData!['content']);
+          }
         } else {
+          if (mounted) {
+            setState(() {
+              error = 'Không tìm thấy bài viết!';
+              isLoading = false;
+            });
+          }
+        }
+      } else {
+        if (mounted) {
           setState(() {
-            error = 'Không tìm thấy bài viết!';
+            error = 'Lỗi server: ${response.statusCode}';
             isLoading = false;
           });
         }
-      } else {
+      }
+    } catch (e) {
+      if (mounted) {
         setState(() {
-          error = 'Lỗi server: ${response.statusCode}';
+          error = 'Lỗi mạng hoặc dữ liệu!';
           isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
-        error = 'Lỗi mạng hoặc dữ liệu!';
-        isLoading = false;
-      });
     }
+  }
+
+  // Hàm gọi Gemini API để lấy gợi ý bình luận
+  Future<void> _fetchCommentSuggestions(String caption) async {
+    if (caption.isEmpty || !mounted) return;
+
+    setState(() {
+      isLoadingSuggestions = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_geminiApiKey'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'contents': [
+            {
+              'parts': [
+                {
+                  'text': 'Bạn là một trợ lý AI, nhiệm vụ là tạo ra 3 gợi ý bình luận tích cực, ngắn gọn (dưới 20 từ mỗi bình luận), phù hợp với văn hóa Việt Nam, cho bài đăng trên mạng xã hội với caption: "$caption". Định dạng mỗi gợi ý trên một dòng, bắt đầu bằng số thứ tự (1., 2., 3.).'
+                }
+              ]
+            }
+          ],
+          'generationConfig': {
+            'temperature': 0.7,
+            'maxOutputTokens': 100,
+          }
+        }),
+      );
+
+      print('API Response Status: ${response.statusCode}');
+      print('API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonBody = json.decode(response.body);
+        if (jsonBody['candidates'] != null && jsonBody['candidates'].isNotEmpty) {
+          final text = jsonBody['candidates'][0]['content']['parts'][0]['text'];
+          final suggestions = text
+              .split('\n')
+              .where((s) => s.trim().isNotEmpty && s.startsWith(RegExp(r'^\d+\.')))
+              .map((s) => s.replaceFirst(RegExp(r'^\d+\.\s*'), '').trim())
+              .toList()
+              .cast<String>(); // Ép kiểu an toàn sang List<String>
+          if (mounted) {
+            setState(() {
+              commentSuggestions = suggestions;
+              isLoadingSuggestions = false;
+            });
+          }
+        } else {
+          throw Exception('Phản hồi API không chứa candidates hợp lệ');
+        }
+      } else if (response.statusCode == 403) {
+        throw Exception('Lỗi 403: API Key không hợp lệ hoặc không có quyền truy cập');
+      } else if (response.statusCode == 429) {
+        throw Exception('Lỗi 429: Vượt quá giới hạn quota API');
+      } else {
+        throw Exception('Lỗi server: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('Lỗi khi gọi Gemini API: $e');
+      if (mounted) {
+        setState(() {
+          isLoadingSuggestions = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi lấy gợi ý bình luận: $e')),
+        );
+      }
+    }
+  }
+
+  void _navigateToUserProfile(String userId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileScreen(
+          getCurrentUserUseCase: _getCurrentUserUseCase,
+          logoutUseCase: _logoutUseCase,
+          getUserByIdUseCase: _getUserByIdUseCase,
+          updateProfileUseCase: _updateProfileUseCase,
+          followUserUseCase: _followUserUseCase,
+          unfollowUserUseCase: _unfollowUserUseCase,
+          userId: userId,
+        ),
+      ),
+    );
   }
 
   Future<void> _showLikesDialog() async {
@@ -475,7 +564,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
 
       if (response.statusCode == 201) {
         _commentController.clear();
-        fetchPost(); // Refresh post data to get new comment
+        fetchPost();
       } else if (response.statusCode == 401) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại')),
@@ -511,96 +600,153 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
       body: isLoading
           ? _buildLoadingState()
           : error != null
-              ? _buildErrorState()
-              : postData == null
-                  ? const Center(child: Text('Không có dữ liệu'))
-                  : SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Author Info
-                          _buildAuthorInfo(),
-                          
-                          // Post Content
-                          _buildPostContent(),
-                          
-                          // Post Stats
-                          _buildPostStats(),
-                          
-                          // Comments Section
-                          PostCommentsSection(
-                            comments: postData!['comments'] ?? [],
-                            onUserTap: _navigateToUserProfile,
-                            onCommentSubmit: _submitComment,
-                            commentController: _commentController,
-                            isSubmitting: isSubmittingComment,
-                          ),
-                        ],
+          ? _buildErrorState()
+          : postData == null
+          ? const Center(child: Text('Không có dữ liệu'))
+          : SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAuthorInfo(),
+            _buildPostContent(),
+            _buildPostStats(),
+            PostCommentsSection(
+              comments: postData!['comments'] ?? [],
+              onUserTap: _navigateToUserProfile,
+              onCommentSubmit: _submitComment,
+              commentController: _commentController,
+              isSubmitting: isSubmittingComment,
+            ),
+            if (isLoadingSuggestions)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (commentSuggestions.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Gợi ý bình luận:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
-      bottomNavigationBar: postData != null
-          ? Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[100],
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: TextField(
-                            controller: _commentController,
-                            decoration: InputDecoration(
-                              hintText: 'Viết bình luận...',
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: const Icon(Icons.emoji_emotions_outlined),
-                                onPressed: () {
-                                  // TODO: Implement emoji picker
-                                },
-                              ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: commentSuggestions.map((suggestion) {
+                        return GestureDetector(
+                          onTap: () {
+                            _commentController.text = suggestion;
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              suggestion,
+                              style: const TextStyle(fontSize: 14),
                             ),
                           ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: postData != null
+          ? Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: TextField(
+                      controller: _commentController,
+                      decoration: InputDecoration(
+                        hintText: 'Viết bình luận...',
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.send, color: Colors.white),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.emoji_emotions_outlined),
                           onPressed: () {
-                            if (_commentController.text.isNotEmpty) {
-                              _submitComment(_commentController.text);
-                            }
+                            // TODO: Implement emoji picker
                           },
                         ),
                       ),
-                    ],
+                      onTap: () {
+                        if (commentSuggestions.isNotEmpty) {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) => ListView(
+                              children: commentSuggestions
+                                  .map((suggestion) => ListTile(
+                                title: Text(suggestion),
+                                onTap: () {
+                                  _commentController.text = suggestion;
+                                  Navigator.pop(context);
+                                },
+                              ))
+                                  .toList(),
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   ),
                 ),
-              ),
-            )
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white),
+                    onPressed: () {
+                      if (_commentController.text.isNotEmpty) {
+                        _submitComment(_commentController.text);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      )
           : null,
     );
   }
@@ -660,9 +806,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
             Text(
               error ?? 'Có lỗi xảy ra',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.red[400],
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: Colors.red[400],
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
