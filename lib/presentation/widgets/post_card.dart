@@ -507,6 +507,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                 _isCommentsExpanded = !_isCommentsExpanded;
               });
             },
+            postContent: widget.post.content, // Truyền nội dung bài đăng
           ),
         ],
       ),
