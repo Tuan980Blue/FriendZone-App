@@ -87,11 +87,6 @@ class _PostsPageState extends State<PostsPage> {
     }
   }
 
-  void _handleCreateStory() {
-    // Implement your story creation logic here
-    debugPrint('Create story tapped');
-  }
-
   void _refreshPosts() {
     setState(() {
       posts.clear();
@@ -148,10 +143,9 @@ class _PostsPageState extends State<PostsPage> {
                       itemCount: stories.length + 1,
                       itemBuilder: (context, index) {
                         if (index == 0) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
+                          return const Padding(
+                            padding: EdgeInsets.only(right: 8.0),
                             child: CreateStoryEntry(
-                              onTap: _handleCreateStory,
                               text: 'Your Story',
                             ),
                           );
