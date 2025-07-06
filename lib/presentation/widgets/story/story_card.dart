@@ -5,12 +5,14 @@ class StoryCard extends StatefulWidget {
   final String userImageUrl;
   final String userName;
   final List<StoryItem> storyItems;
+  final String storyImageUrl;
 
   const StoryCard({
     Key? key,
     required this.userImageUrl,
     required this.userName,
     required this.storyItems,
+    required this.storyImageUrl,
   }) : super(key: key);
 
   @override
@@ -45,45 +47,86 @@ class _StoryCardState extends State<StoryCard> {
           ),
         );
       },
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.pink,
-                  Colors.purple,
-                  Colors.orange,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      child: Container(
+        width: 115,
+        height: 190,
+        margin: const EdgeInsets.symmetric(horizontal: 1),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.white,
+        ),
+        child: Stack(
+          children: [
+            // Story image background
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                widget.storyImageUrl,
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.grey[200],
+                  child: const Center(child: Icon(Icons.image, size: 40)),
+                ),
               ),
-              shape: BoxShape.circle,
             ),
-            child: Container(
-              padding: const EdgeInsets.all(2),
+
+            // Gradient overlay
+            Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: CircleAvatar(
-                radius: 30,
-                backgroundImage: NetworkImage(widget.userImageUrl),
+                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.6),
+                    Colors.transparent,
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            widget.userName,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
+
+            // User avatar at top left
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.blue, width: 2),
+                ),
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundImage: NetworkImage(widget.userImageUrl),
+                  child: widget.userImageUrl.isEmpty
+                      ? const Icon(Icons.person, size: 16)
+                      : null,
+                ),
+              ),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+
+            // User name at bottom left
+            Positioned(
+              bottom: 10,
+              left: 8,
+              right: 8,
+              child: Text(
+                widget.userName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.left,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

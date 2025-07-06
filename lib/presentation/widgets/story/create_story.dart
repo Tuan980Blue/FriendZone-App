@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../di/injection_container.dart';
 import '../../../domain/usecases/auth/get_current_user_usecase.dart';
-import '../../../domain/entities/user.dart'; // Make sure to import your User entity
+import '../../../domain/entities/user.dart';
 
 class CreateStoryEntry extends StatelessWidget {
   final VoidCallback onTap;
@@ -29,72 +29,82 @@ class CreateStoryEntry extends StatelessWidget {
         }
 
         final user = snapshot.data!;
-        final userImageUrl = user.avatar; // Assuming your User entity has avatarUrl
+        final userImageUrl = user.avatar;
 
         return GestureDetector(
           onTap: onTap,
           child: Container(
-            width: 110,
+            width: 115,
             height: 190,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
+            margin: const EdgeInsets.symmetric(horizontal: 1),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: Colors.white,
+              border: Border.all(color: Colors.grey[300]!),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withOpacity(0.2),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: Stack(
-              alignment: Alignment.bottomCenter,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // User avatar part
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                    topRight: Radius.circular(10),
+                // Phần hình ảnh sát top
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(10),
+                    ),
+                    child: Container(
+                      color: Colors.grey[200],
+                      child: userImageUrl != null
+                          ? Image.network(
+                        userImageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildDefaultAvatar(),
+                      )
+                          : _buildDefaultAvatar(),
+                    ),
                   ),
-                  child: Image.network(
-                    userImageUrl!,
-                    width: double.infinity,
-                    height: 140,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Container(
-                          color: Colors.grey[200],
-                          height: 140,
-                          child: const Icon(Icons.person, size: 40),
+                ),
+
+                // Phần nội dung dưới
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Nút add
+                      Container(
+                        width: 36,
+                        height: 36,
+                        margin: const EdgeInsets.only(bottom: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[500],
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
                         ),
-                  ),
-                ),
+                        child: const Icon(Icons.add,
+                            color: Colors.white,
+                            size: 20),
+                      ),
 
-                // Create story button
-                Positioned(
-                  bottom: 40,
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.blue[600],
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                    ),
-                    child: const Icon(Icons.add, color: Colors.white),
-                  ),
-                ),
-
-                // Text
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                      // Text
+                      Text(
+                        text,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -102,6 +112,12 @@ class CreateStoryEntry extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildDefaultAvatar() {
+    return const Center(
+      child: Icon(Icons.person, size: 40, color: Colors.grey),
     );
   }
 

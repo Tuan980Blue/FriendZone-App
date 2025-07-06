@@ -139,21 +139,33 @@ class _PostsPageState extends State<PostsPage> {
               child: Container(
                 color: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                child: SizedBox(
-                  height: 100,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: stories.length + 1, // +1 for CreateStory
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return CreateStoryEntry(
-                          onTap: _handleCreateStory,
-                          text: 'Your Story',
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: stories.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: CreateStoryEntry(
+                              onTap: _handleCreateStory,
+                              text: 'Your Story',
+                            ),
+                          );
+                        }
+                        final story = stories[index - 1];
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 10.0),
+                          child: StoryCard(
+                            userImageUrl: story['userImageUrl'],
+                            userName: story['userName'], storyItems: const [], storyImageUrl: '',
+                          ),
                         );
-                      }
-                      final story = stories[index - 1];
-                      return null;
-                    },
+                      },
+                    ),
                   ),
                 ),
               ),
