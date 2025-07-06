@@ -13,7 +13,7 @@ Người dùng có thể nhắn tin, tương tác bài post, và cập nhật tr
 
 ---
 
-## 📸 Giao diện Minh Hoạ
+## 📸 Giao diện
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/da070465-89f6-4455-b4b4-753fccac89dd" alt="Giao diện 1" width="200"/>
