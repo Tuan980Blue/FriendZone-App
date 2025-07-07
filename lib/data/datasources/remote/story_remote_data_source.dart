@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import '../../../../core/constants/api_constants.dart';
@@ -45,7 +46,8 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
 
     if (response.statusCode == 200 && data['success'] == true) {
       final stories = data['data'] as List;
-      return stories.map((e) => StoryModel.fromJson(e)).toList();
+      final parsed = stories.map((e) => StoryModel.fromJson(e)).toList();
+      return parsed;
     } else {
       throw ServerException(data['message'] ?? 'Failed to fetch user stories');
     }

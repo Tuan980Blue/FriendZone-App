@@ -1,4 +1,4 @@
-
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/story.dart';
 import 'user_model.dart';
 
@@ -12,11 +12,11 @@ class StoryModel extends Story {
     required int viewCount,
     required int likeCount,
     required bool isHighlighted,
-    required String location,
-    required String filter,
+    String? location,
+    String? filter,
     required String authorId,
     String? highlightId,
-    required UserModel author,
+    UserModel? author,
   }) : super(
     id: id,
     mediaUrl: mediaUrl,
@@ -34,19 +34,27 @@ class StoryModel extends Story {
   );
 
   factory StoryModel.fromJson(Map<String, dynamic> json) {
-    final author = UserModel.fromJson(json['author']);
+    if (kDebugMode) {
+      print('🛠️ parsing StoryModel: $json');
+    }
+
+    final authorJson = json['author'];
+    final author = authorJson != null
+        ? UserModel.fromJson(authorJson)
+        : null;
 
     return StoryModel(
       id: json['id'] ?? '',
       mediaUrl: json['mediaUrl'] ?? '',
       mediaType: json['mediaType'] ?? 'IMAGE',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      expiresAt: DateTime.tryParse(json['expiresAt'] ?? '') ?? DateTime.now().add(Duration(hours: 24)),
+      expiresAt: DateTime.tryParse(json['expiresAt'] ?? '') ??
+          DateTime.now().add(const Duration(hours: 24)),
       viewCount: (json['viewCount'] as num?)?.toInt() ?? 0,
       likeCount: (json['likeCount'] as num?)?.toInt() ?? 0,
       isHighlighted: json['isHighlighted'] ?? false,
-      location: json['location'] ?? '',
-      filter: json['filter'] ?? '',
+      location: json['location'],
+      filter: json['filter'],
       authorId: json['authorId'] ?? '',
       highlightId: json['highlightId'],
       author: author,
@@ -67,7 +75,7 @@ class StoryModel extends Story {
       'filter': filter,
       'authorId': authorId,
       'highlightId': highlightId,
-      'author': (author as UserModel).toJson(),
+      'author': author != null ? (author as UserModel).toJson() : null,
     };
   }
 }

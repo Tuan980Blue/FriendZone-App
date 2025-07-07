@@ -8,7 +8,8 @@ class GetMyStoriesUseCase implements UseCase<List<Story>, void> {
   GetMyStoriesUseCase(this._storyRepository);
 
   @override
-  Future<List<Story>> call(void _) {
-    return _storyRepository.getMyStories();
+  Future<List<Story>> call(void _) async {
+    final stories = await _storyRepository.getMyStories();
+    return stories;
   }
 }

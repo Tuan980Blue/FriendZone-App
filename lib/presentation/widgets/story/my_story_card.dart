@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:story_view/controller/story_controller.dart';
 import 'package:story_view/story_view.dart';
 import '../../../di/injection_container.dart';
 import '../../../domain/entities/user.dart';
@@ -7,18 +6,30 @@ import '../../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../../domain/usecases/storys/get_my_stories_usecase.dart';
 import '../../../domain/entities/story.dart';
 
-class MyStoryCard extends StatelessWidget {
+class MyStoryCard extends StatefulWidget {
   const MyStoryCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
-    final getMyStoriesUseCase = sl<GetMyStoriesUseCase>();
+  State<MyStoryCard> createState() => _MyStoryCardState();
+}
 
+class _MyStoryCardState extends State<MyStoryCard> {
+  late Future<User> _userFuture;
+  late Future<List<Story>> _storiesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userFuture = sl<GetCurrentUserUseCase>().call();
+    _storiesFuture = sl<GetMyStoriesUseCase>().call(null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return FutureBuilder<User>(
-      future: getCurrentUserUseCase.call(),
+      future: _userFuture,
       builder: (context, userSnapshot) {
-        if (userSnapshot.connectionState == ConnectionState.waiting) {
+        if (userSnapshot.connectionState != ConnectionState.done) {
           return _buildLoadingPlaceholder();
         }
 
@@ -30,20 +41,21 @@ class MyStoryCard extends StatelessWidget {
         final userImageUrl = user.avatar;
 
         return FutureBuilder<List<Story>>(
-          future: getMyStoriesUseCase.call(null),
+          future: _storiesFuture,
           builder: (context, storySnapshot) {
-            final hasStories = storySnapshot.hasData && storySnapshot.data!.isNotEmpty;
+            final isDone = storySnapshot.connectionState == ConnectionState.done;
+            final hasStories = isDone && storySnapshot.hasData && storySnapshot.data!.isNotEmpty;
 
             return GestureDetector(
               onTap: () {
-                if (storySnapshot.connectionState != ConnectionState.done) {
+                final stories = storySnapshot.data;
+
+                if (!isDone) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Đang tải story...')),
                   );
                   return;
                 }
-
-                final stories = storySnapshot.data;
 
                 if (stories == null || stories.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -54,13 +66,6 @@ class MyStoryCard extends StatelessWidget {
 
                 final storyItems = stories.map((story) {
                   final mediaUrl = story.mediaUrl;
-                  if (mediaUrl == null || mediaUrl.isEmpty) {
-                    return StoryItem.text(
-                      title: 'Không tìm thấy media',
-                      backgroundColor: Colors.grey,
-                    );
-                  }
-
                   final location = story.location ?? '';
 
                   if (story.mediaType.toUpperCase() == 'IMAGE') {
@@ -100,16 +105,19 @@ class MyStoryCard extends StatelessWidget {
               child: Container(
                 width: 115,
                 height: 190,
-                margin: const EdgeInsets.symmetric(horizontal: 1),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: hasStories ? Colors.pink[300] : Colors.grey[300],
-                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(12),
+                  color: hasStories ? Colors.pink[100] : Colors.grey[300],
+                  border: Border.all(
+                    color: hasStories ? Colors.blue : Colors.grey[400]!,
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -118,8 +126,8 @@ class MyStoryCard extends StatelessWidget {
                   children: [
                     // Avatar
                     Container(
-                      width: 56,
-                      height: 56,
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
@@ -142,7 +150,7 @@ class MyStoryCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                        color: Colors.black87,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

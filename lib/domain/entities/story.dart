@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'user.dart';
+import 'package:friendzoneapp/domain/entities/user.dart';
 
 class Story extends Equatable {
   final String id;
@@ -10,11 +10,11 @@ class Story extends Equatable {
   final int viewCount;
   final int likeCount;
   final bool isHighlighted;
-  final String location;
-  final String filter;
+  final String? location;
+  final String? filter;
   final String authorId;
   final String? highlightId;
-  final User author;
+  final User? author;
 
   const Story({
     required this.id,
@@ -25,11 +25,11 @@ class Story extends Equatable {
     required this.viewCount,
     required this.likeCount,
     required this.isHighlighted,
-    required this.location,
-    required this.filter,
+    this.location,
+    this.filter,
     required this.authorId,
-    required this.highlightId,
-    required this.author,
+    this.highlightId,
+    this.author,
   });
 
   @override
