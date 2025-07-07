@@ -4,6 +4,7 @@ import '../../domain/entities/post.dart';
 import '../../domain/usecases/posts/get_posts_usecase.dart';
 import '../widgets/post_card.dart';
 import '../widgets/create_post.dart';
+import '../widgets/story/my_story_card.dart';
 import '../widgets/story/story_card.dart';
 
 class PostsPage extends StatefulWidget {
@@ -140,22 +141,29 @@ class _PostsPageState extends State<PostsPage> {
                     height: 200,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: stories.length + 1,
+                      itemCount: stories.length + 2,
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           return const Padding(
                             padding: EdgeInsets.only(right: 8.0),
-                            child: CreateStoryEntry(
-                              text: 'Your Story',
-                            ),
+                            child: CreateStoryEntry(text: 'Tạo tin'),
                           );
                         }
-                        final story = stories[index - 1];
-                        return Padding(
+
+                        if (index == 1) {
+                          return const Padding(
+                            padding: EdgeInsets.only(right: 10.0),
+                            child: MyStoryCard(),
+                          );
+                        }
+
+                        final story = stories[index - 2];                         return Padding(
                           padding: const EdgeInsets.only(right: 10.0),
                           child: StoryCard(
                             userImageUrl: story['userImageUrl'],
-                            userName: story['userName'], storyItems: const [], storyImageUrl: '',
+                            userName: story['userName'],
+                            storyItems: story['storyItems'] ?? [],
+                            storyImageUrl: story['storyImageUrl'] ?? '',
                           ),
                         );
                       },

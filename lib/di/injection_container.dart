@@ -30,6 +30,7 @@ import '../domain/usecases/posts/get_posts_usecase.dart';
 import '../domain/usecases/posts/create_post_usecase.dart';
 import '../domain/usecases/posts/upload_image_usecase.dart';
 import '../domain/usecases/storys/create_story_usecase.dart';
+import '../domain/usecases/storys/get_my_stories_usecase.dart';
 import '../domain/usecases/storys/get_story_feed_usecase.dart';
 import '../domain/usecases/storys/upload_story_media_usecase.dart';
 import '../domain/usecases/users/get_user_suggestions_usecase.dart';
@@ -130,6 +131,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => UploadStoryMediaUseCase(sl()));
   sl.registerLazySingleton(() => CreateStoryUseCase(sl()));
   sl.registerLazySingleton(() => GetStoryFeedUseCase(sl()));
+  sl.registerLazySingleton(() => GetMyStoriesUseCase(sl()));
+
 
   // BLoCs
   sl.registerFactory(
