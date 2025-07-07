@@ -1,14 +1,14 @@
-import '../../entities/story.dart';
+import '../../../data/models/story_feed.dart';
 import '../../repositories/story_repository.dart';
 import '../base_usecase.dart';
 
-class GetStoryFeedUseCase implements UseCase<List<Story>, void> {
+class GetStoryFeedUseCase implements UseCase<List<StoryFeedItem>, void> {
   final StoryRepository _storyRepository;
 
   GetStoryFeedUseCase(this._storyRepository);
 
   @override
-  Future<List<Story>> call(void _) {
+  Future<List<StoryFeedItem>> call(void _) {
     return _storyRepository.getStoryFeed();
   }
 }

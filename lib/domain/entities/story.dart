@@ -15,6 +15,7 @@ class Story extends Equatable {
   final String authorId;
   final String? highlightId;
   final User? author;
+  final bool isLikedByCurrentUser;
 
   const Story({
     required this.id,
@@ -30,6 +31,7 @@ class Story extends Equatable {
     required this.authorId,
     this.highlightId,
     this.author,
+    this.isLikedByCurrentUser = false,
   });
 
   @override

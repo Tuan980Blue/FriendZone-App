@@ -1,9 +1,10 @@
 import 'dart:io';
+import '../../data/models/story_feed.dart';
 import '../entities/story.dart';
 
 abstract class StoryRepository {
   Future<List<Story>> getMyStories();
-  Future<List<Story>> getStoryFeed();
+  Future<List<StoryFeedItem>> getStoryFeed();
   Future<String?> uploadMedia(File mediaFile);
   Future<Story> createStory({
     required String mediaUrl,

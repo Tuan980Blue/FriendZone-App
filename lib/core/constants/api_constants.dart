@@ -29,5 +29,5 @@ class ApiConstants {
   static const String storiesEndpoint = '/stories';
   static const String storyByIdEndpoint = '/stories/feed';
   static const String userStoriesEndpoint = '/stories/my/';
-
+  static String likeStoryEndpoint(String storyId) => '/stories/$storyId/like';
 } 

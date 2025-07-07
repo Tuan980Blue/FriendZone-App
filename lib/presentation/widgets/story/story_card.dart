@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:story_view/story_view.dart';
 
+import '../../../domain/entities/story.dart';
+import '../../screens/generic_story_view_screen.dart';
+
 class StoryCard extends StatefulWidget {
   final String userImageUrl;
   final String userName;
   final List<StoryItem> storyItems;
   final String storyImageUrl;
+  final List<Story> stories;
+  final bool isMyStory;
 
   const StoryCard({
     Key? key,
@@ -13,6 +18,8 @@ class StoryCard extends StatefulWidget {
     required this.userName,
     required this.storyItems,
     required this.storyImageUrl,
+    required this.stories,
+    required this.isMyStory,
   }) : super(key: key);
 
   @override
@@ -35,14 +42,9 @@ class _StoryCardState extends State<StoryCard> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => StoryView(
-              storyItems: widget.storyItems,
-              controller: storyController,
-              inline: false,
-              repeat: false,
-              onComplete: () {
-                Navigator.pop(context);
-              },
+            builder: (_) => GenericStoryViewScreen(
+              stories: widget.stories,
+              isMyStory: widget.isMyStory,
             ),
           ),
         );

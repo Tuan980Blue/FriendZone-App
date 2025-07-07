@@ -1,8 +1,8 @@
 import 'dart:io';
-
 import '../../domain/entities/story.dart';
 import '../../domain/repositories/story_repository.dart';
 import '../datasources/remote/story_remote_data_source.dart';
+import '../models/story_feed.dart';
 
 class StoryRepositoryImpl implements StoryRepository {
   final StoryRemoteDataSource _remoteDataSource;
@@ -16,9 +16,8 @@ class StoryRepositoryImpl implements StoryRepository {
   }
 
   @override
-  Future<List<Story>> getStoryFeed() async {
-    final response = await _remoteDataSource.fetchFeedStories();
-    return response;
+  Future<List<StoryFeedItem>> getStoryFeed() async {
+    return await _remoteDataSource.fetchFeedStoryGroups();
   }
 
   @override

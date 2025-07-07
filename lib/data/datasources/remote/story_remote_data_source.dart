@@ -6,10 +6,11 @@ import 'package:http_parser/http_parser.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/api_client.dart';
+import '../../models/story_feed.dart';
 import '../../models/story_model.dart';
 
 abstract class StoryRemoteDataSource {
-  Future<List<StoryModel>> fetchFeedStories();
+  Future<List<StoryFeedItem>> fetchFeedStoryGroups();
   Future<List<StoryModel>> fetchMyStories();
   Future<StoryModel> createStory({
     required String mediaUrl,
@@ -19,6 +20,7 @@ abstract class StoryRemoteDataSource {
     required bool isHighlighted,
   });
   Future<String?> uploadImage(File imageFile);
+  Future<void> likeStory(String storyId);
 }
 
 class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
@@ -27,13 +29,13 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
   StoryRemoteDataSourceImpl(this._apiClient);
 
   @override
-  Future<List<StoryModel>> fetchFeedStories() async {
+  Future<List<StoryFeedItem>> fetchFeedStoryGroups() async {
     final response = await _apiClient.get(ApiConstants.storyByIdEndpoint);
     final data = json.decode(response.body);
 
     if (response.statusCode == 200 && data['success'] == true) {
-      final stories = data['data'] as List;
-      return stories.map((e) => StoryModel.fromJson(e)).toList();
+      final items = data['data'] as List;
+      return items.map((e) => StoryFeedItem.fromJson(e)).toList();
     } else {
       throw ServerException(data['message'] ?? 'Failed to fetch feed stories');
     }
@@ -117,6 +119,21 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
       }
     } catch (e) {
       throw ServerException('Failed to upload story image: $e');
+    }
+  }
+
+  @override
+  Future<void> likeStory(String storyId) async {
+    final response = await _apiClient.post(
+      ApiConstants.likeStoryEndpoint(storyId), body: {},
+    );
+
+    final data = json.decode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      debugPrint("Like thành công story $storyId");
+    } else {
+      throw ServerException(data['message'] ?? 'Like story thất bại');
     }
   }
 }

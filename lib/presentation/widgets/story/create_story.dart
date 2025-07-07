@@ -38,7 +38,7 @@ class CreateStoryEntry extends StatelessWidget {
             );
           },
           child: Container(
-            width: 115,
+            width: 114,
             height: 190,
             margin: const EdgeInsets.symmetric(horizontal: 1),
             decoration: BoxDecoration(

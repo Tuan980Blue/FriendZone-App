@@ -93,8 +93,8 @@ class _MyStoryCardState extends State<MyStoryCard> {
                   context,
                   MaterialPageRoute(
                     builder: (_) => GenericStoryViewScreen(
-                      mediaUrls: stories.map((e) => e.mediaUrl).toList(),
-                      mediaTypes: stories.map((e) => e.mediaType).toList(),
+                      stories: stories,
+                      isMyStory: true,
                     ),
                   ),
                 );

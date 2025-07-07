@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import '../../domain/entities/story.dart';
 import 'user_model.dart';
 
@@ -17,6 +16,7 @@ class StoryModel extends Story {
     required String authorId,
     String? highlightId,
     UserModel? author,
+    required bool isLikedByCurrentUser,
   }) : super(
     id: id,
     mediaUrl: mediaUrl,
@@ -31,13 +31,10 @@ class StoryModel extends Story {
     authorId: authorId,
     highlightId: highlightId,
     author: author,
+    isLikedByCurrentUser: isLikedByCurrentUser,
   );
 
   factory StoryModel.fromJson(Map<String, dynamic> json) {
-    if (kDebugMode) {
-      print('🛠️ parsing StoryModel: $json');
-    }
-
     final authorJson = json['author'];
     final author = authorJson != null
         ? UserModel.fromJson(authorJson)
@@ -58,6 +55,7 @@ class StoryModel extends Story {
       authorId: json['authorId'] ?? '',
       highlightId: json['highlightId'],
       author: author,
+      isLikedByCurrentUser: json['isLikedByCurrentUser'] ?? false,
     );
   }
 
@@ -76,6 +74,7 @@ class StoryModel extends Story {
       'authorId': authorId,
       'highlightId': highlightId,
       'author': author != null ? (author as UserModel).toJson() : null,
+      'isLikedByCurrentUser': isLikedByCurrentUser,
     };
   }
 }
