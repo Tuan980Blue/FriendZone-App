@@ -125,15 +125,18 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
   @override
   Future<void> likeStory(String storyId) async {
     final response = await _apiClient.post(
-      ApiConstants.likeStoryEndpoint(storyId), body: {},
+      ApiConstants.likeStoryEndpoint(storyId),
+      body: {},
     );
 
     final data = json.decode(response.body);
+    debugPrint('Like story response: ${response.statusCode} - $data');
 
     if (response.statusCode == 200 && data['success'] == true) {
-      debugPrint("Like thành công story $storyId");
+      debugPrint("✅ Like thành công story $storyId");
     } else {
-      throw ServerException(data['message'] ?? 'Like story thất bại');
+      throw ServerException(data['error'] ?? 'Like story thất bại');
     }
   }
+
 }

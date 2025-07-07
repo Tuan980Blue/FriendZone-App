@@ -1,6 +1,10 @@
 class ServerException implements Exception {
   final String message;
-  ServerException(this.message);
+
+  ServerException([this.message = "Lỗi máy chủ"]);
+
+  @override
+  String toString() => "ServerException: $message";
 }
 
 class CacheException implements Exception {
