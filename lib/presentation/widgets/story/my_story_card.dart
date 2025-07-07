@@ -5,6 +5,7 @@ import '../../../domain/entities/user.dart';
 import '../../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../../domain/usecases/storys/get_my_stories_usecase.dart';
 import '../../../domain/entities/story.dart';
+import '../../screens/generic_story_view_screen.dart';
 
 class MyStoryCard extends StatefulWidget {
   const MyStoryCard({super.key});
@@ -91,13 +92,9 @@ class _MyStoryCardState extends State<MyStoryCard> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => Scaffold(
-                      backgroundColor: Colors.black,
-                      body: StoryView(
-                        storyItems: storyItems,
-                        controller: StoryController(),
-                        onComplete: () => Navigator.pop(context),
-                      ),
+                    builder: (_) => GenericStoryViewScreen(
+                      mediaUrls: stories.map((e) => e.mediaUrl).toList(),
+                      mediaTypes: stories.map((e) => e.mediaType).toList(),
                     ),
                   ),
                 );
