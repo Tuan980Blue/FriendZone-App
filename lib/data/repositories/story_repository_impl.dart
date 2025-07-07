@@ -11,7 +11,7 @@ class StoryRepositoryImpl implements StoryRepository {
   @override
   Future<List<Story>> getMyStories() async {
     final response = await _remoteDataSource.fetchMyStories();
-    return response; // response đã là List<StoryModel> implements Story
+    return response;
   }
 
   @override
@@ -31,12 +31,15 @@ class StoryRepositoryImpl implements StoryRepository {
     required String mediaType,
     required String location,
     required String filter,
+    required bool isHighlighted,
   }) async {
-    return await _remoteDataSource.createStory(
+    final storyModel = await _remoteDataSource.createStory(
       mediaUrl: mediaUrl,
       mediaType: mediaType,
       location: location,
       filter: filter,
+      isHighlighted: isHighlighted,
     );
+    return storyModel;
   }
 }

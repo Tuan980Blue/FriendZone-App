@@ -15,6 +15,7 @@ abstract class StoryRemoteDataSource {
     required String mediaType,
     required String location,
     required String filter,
+    required bool isHighlighted,
   });
   Future<String?> uploadImage(File imageFile);
 }
@@ -56,6 +57,7 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
     required String mediaType,
     required String location,
     required String filter,
+    required bool isHighlighted,
   }) async {
     final response = await _apiClient.post(
       ApiConstants.storiesEndpoint,
@@ -64,11 +66,13 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
         'mediaType': mediaType,
         'location': location,
         'filter': filter,
+        'isHighlighted': isHighlighted.toString(),
       },
     );
 
     final data = json.decode(response.body);
-    if (response.statusCode == 200 && data['success'] == true) {
+
+    if ((response.statusCode == 200 || response.statusCode == 201) && data['success'] == true) {
       return StoryModel.fromJson(data['data']);
     } else {
       throw ServerException(data['message'] ?? 'Failed to create story');

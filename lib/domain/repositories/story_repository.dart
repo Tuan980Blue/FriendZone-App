@@ -10,5 +10,6 @@ abstract class StoryRepository {
     required String mediaType,
     required String location,
     required String filter,
+    required bool isHighlighted,
   });
 }

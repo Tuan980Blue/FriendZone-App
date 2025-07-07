@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '../../../di/injection_container.dart';
 import '../../../domain/entities/user.dart';
+import '../../../domain/usecases/storys/create_story_usecase.dart';
+import '../../../domain/usecases/storys/upload_story_media_usecase.dart';
 
 class StoryOptionDialog extends StatefulWidget {
   final User user;
@@ -19,6 +22,11 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
   final ImagePicker _picker = ImagePicker();
   List<XFile>? _recentImages;
   bool _isLoadingImages = true;
+
+  final _formKey = GlobalKey<FormState>();
+  String _mediaType = 'IMAGE';
+  String _location = '';
+  String _filter = 'Normal';
 
   @override
   void initState() {
@@ -41,6 +49,150 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
     }
   }
 
+  void _showStoryCreationForm(File imageFile) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          insetPadding: EdgeInsets.zero, // Loại bỏ khoảng trắng mặc định
+          backgroundColor: Colors.white,
+          child: SizedBox.expand(
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text('Tạo tin mới'),
+                leading: IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(
+                          imageFile,
+                          height: 280,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Media Type Dropdown
+                      DropdownButtonFormField<String>(
+                        value: _mediaType,
+                        items: ['IMAGE', 'VIDEO']
+                            .map((e) => DropdownMenuItem(
+                          value: e,
+                          child: Text(e),
+                        ))
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => _mediaType = val ?? 'IMAGE'),
+                        decoration: const InputDecoration(
+                          labelText: 'Loại media',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Location Input
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Vị trí',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (val) => _location = val,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Filter Dropdown
+                      DropdownButtonFormField<String>(
+                        value: _filter,
+                        items: ['Normal', 'BlackWhite', 'Sepia']
+                            .map((e) => DropdownMenuItem(
+                          value: e,
+                          child: Text(e),
+                        ))
+                            .toList(),
+                        onChanged: (val) =>
+                            setState(() => _filter = val ?? 'Normal'),
+                        decoration: const InputDecoration(
+                          labelText: 'Bộ lọc',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Action buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Hủy'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              if (!_formKey.currentState!.validate()) return;
+
+                              final uploadUseCase = sl<UploadStoryMediaUseCase>();
+                              final createUseCase = sl<CreateStoryUseCase>();
+
+                              final mediaUrl = await uploadUseCase.call(imageFile);
+                              if (mediaUrl == null) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Tải ảnh thất bại')),
+                                );
+                                return;
+                              }
+
+                              try {
+                                await createUseCase.call(
+                                  CreateStoryParams(
+                                    mediaUrl: mediaUrl,
+                                    mediaType: _mediaType,
+                                    location: _location,
+                                    filter: _filter,
+                                    isHighlighted: false,
+                                  ),
+                                );
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Tạo tin thành công!')),
+                                );
+                              } catch (e) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Tạo tin thất bại')),
+                                );
+                              }
+                            },
+                            child: const Text('Tạo tin'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -58,26 +210,16 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
                 _buildHeader(),
                 const SizedBox(height: 9),
-
-                // Horizontal Options
                 _buildHorizontalOptions(),
-
-                // Title
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Text(
                     'Thư viện',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
-
-                // Grid Images
                 Expanded(
                   child: _isLoadingImages
                       ? const Center(child: CircularProgressIndicator())
@@ -92,17 +234,20 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
                     ),
                     itemCount: _recentImages!.length,
                     itemBuilder: (context, index) {
-                      return Image.file(
-                        File(_recentImages![index].path),
-                        fit: BoxFit.cover,
+                      return GestureDetector(
+                        onTap: () {
+                          _showStoryCreationForm(File(_recentImages![index].path));
+                        },
+                        child: Image.file(
+                          File(_recentImages![index].path),
+                          fit: BoxFit.cover,
+                        ),
                       );
                     },
                   ),
                 ),
               ],
             ),
-
-            // Floating Action Button ở góc dưới bên phải
             Positioned(
               bottom: 12,
               right: 12,
@@ -113,7 +258,7 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
                   onPressed: () async {
                     final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
                     if (photo != null) {
-                      Navigator.pop(context, photo);
+                      _showStoryCreationForm(File(photo.path));
                     }
                   },
                   child: const Icon(Icons.camera_alt, size: 36),
@@ -136,10 +281,7 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
         ),
         const Text(
           'Tạo tin',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         IconButton(
           icon: const Icon(Icons.settings, size: 24),
