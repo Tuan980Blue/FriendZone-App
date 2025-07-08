@@ -805,9 +805,18 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                                       color: Colors.black.withOpacity(0.1),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.logout),
+                                    child: const Icon(Icons.add),
                                   ),
-                                  onPressed: _handleLogout,
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                                      ),
+                                      backgroundColor: Colors.white,
+                                      builder: (context) => _buildCreateOptionsDialog(context),
+                                    );
+                                  },
                                 ),
                             ],
                             title: AnimatedOpacity(
@@ -837,6 +846,45 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                     ),
     );
   }
+
+  Widget _buildCreateOptionsDialog(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.4,
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 50,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ListTile(
+            leading: const Icon(Icons.add_a_photo),
+            title: const Text('Tạo tin'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Chuyển sang màn tạo tin
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.star_border),
+            title: const Text('Tạo tin nổi bật'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Chuyển sang màn hình tạo tin nổi bật
+            },
+          ),
+          const Spacer(),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
 }
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
