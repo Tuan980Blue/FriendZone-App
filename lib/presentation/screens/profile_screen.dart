@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../data/datasources/remote/story_remote_data_source.dart';
+import '../../data/models/hightlight_model.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/auth/login_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
+import 'highlight_stories_screen.dart';
+import 'highlight_viewer_screen.dart';
 import 'login_screen.dart';
 import '../../di/injection_container.dart';
 import '../../domain/usecases/auth/google_sign_in_usecase.dart';
@@ -59,6 +63,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   late TabController _tabController;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  List<HighlightModel> _highlightList = [];
+  bool _isLoadingHighlights = true;
 
   bool get isViewingOwnProfile {
     if (_currentUser == null || _user == null) return false;
@@ -116,12 +122,32 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       } else {
         _user = await widget.getUserByIdUseCase(widget.userId!);
       }
+
+      await _loadHighlights();
+
       setState(() => _isLoading = false);
     } catch (e) {
       setState(() {
         _error = e.toString().replaceAll('Exception: ', '');
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadHighlights() async {
+    try {
+      final userId = _user?.id ?? "";
+      final highlights = await sl<StoryRemoteDataSource>().fetchHighlights(userId: userId);
+
+      setState(() {
+        _highlightList = highlights;
+        _isLoadingHighlights = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingHighlights = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi tải highlight: $e')),
+      );
     }
   }
 
@@ -335,15 +361,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   Widget _buildProfileHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: Colors.white,
+
       ),
       child: Column(
         children: [
@@ -834,6 +854,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                           SliverToBoxAdapter(
                             child: _buildProfileHeader(),
                           ),
+                          SliverToBoxAdapter(
+                            child: _buildHighlightScroller(),
+                          ),
                           SliverPersistentHeader(
                             delegate: _SliverAppBarDelegate(
                               _buildTabBar(),
@@ -844,6 +867,57 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                       },
                       body: _buildTabContent(),
                     ),
+    );
+  }
+
+  Widget _buildHighlightScroller() {
+    if (_highlightList.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: SizedBox(
+        height: 130,
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          scrollDirection: Axis.horizontal,
+          itemCount: _highlightList.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 12),
+          itemBuilder: (context, index) {
+            final highlight = _highlightList[index];
+
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => HighlightViewerScreen(highlight: highlight),
+                  ),
+                );
+              },
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundImage: NetworkImage(highlight.coverImage),
+                  ),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: 70,
+                    child: Text(
+                      highlight.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -874,8 +948,10 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             leading: const Icon(Icons.star_border),
             title: const Text('Tạo tin nổi bật'),
             onTap: () {
-              Navigator.pop(context);
-              // TODO: Chuyển sang màn hình tạo tin nổi bật
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HighlightCreationScreen()),
+              );
             },
           ),
           const Spacer(),

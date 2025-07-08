@@ -6,6 +6,7 @@ import 'package:http_parser/http_parser.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/api_client.dart';
+import '../../models/hightlight_model.dart';
 import '../../models/story_feed.dart';
 import '../../models/story_model.dart';
 
@@ -21,6 +22,8 @@ abstract class StoryRemoteDataSource {
   });
   Future<String?> uploadImage(File imageFile);
   Future<void> likeStory(String storyId);
+  Future<void> createHighlight({required String name, required List<String> storyIds});
+  Future<List<HighlightModel>> fetchHighlights({required String userId});
 }
 
 class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
@@ -133,9 +136,45 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
     debugPrint('Like story response: ${response.statusCode} - $data');
 
     if (response.statusCode == 200 && data['success'] == true) {
-      debugPrint("✅ Like thành công story $storyId");
+      debugPrint("Like thành công story $storyId");
     } else {
       throw ServerException(data['error'] ?? 'Like story thất bại');
+    }
+  }
+
+  @override
+  Future<void> createHighlight({
+    required String name,
+    required List<String> storyIds,
+  }) async {
+    final response = await _apiClient.post(
+      ApiConstants.createHighlightEndpoint,
+      body: {
+        'name': name,
+        'storyIds': storyIds,
+      },
+    );
+
+    final data = json.decode(response.body);
+
+    if ((response.statusCode == 200 || response.statusCode == 201) && data['success'] == true) {
+      debugPrint("✅ Tạo highlight thành công");
+    } else {
+      final errorMsg = data['error'] ?? data['message'] ?? 'Tạo highlight thất bại';
+      throw ServerException(errorMsg);
+    }
+  }
+
+  @override
+  Future<List<HighlightModel>> fetchHighlights({required String userId}) async {
+    final response = await _apiClient.get('/stories/highlights/$userId');
+    final data = json.decode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      final highlights = data['data'] as List;
+      return highlights.map((e) => HighlightModel.fromJson(e)).toList();
+    } else {
+      throw ServerException(data['message'] ?? 'Failed to fetch highlights');
     }
   }
 
