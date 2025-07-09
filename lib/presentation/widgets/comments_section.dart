@@ -229,7 +229,6 @@ class _CommentsSectionState extends State<CommentsSection> {
       });
     }
   }
-
   String _formatDate(String dateString) {
     final date = DateTime.parse(dateString);
     final now = DateTime.now();
