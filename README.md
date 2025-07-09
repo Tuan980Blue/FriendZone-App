@@ -8,7 +8,7 @@
 
 ## 🧾 Giới thiệu
 
-**FriendZone** là một ứng dụng mạng xã hội **thời gian thực** lấy cảm hứng từ app *Instagram*.  
+**FriendZone** là một ứng dụng mạng xã hội **thời gian thực** lấy cảm hứng từ *Instagram*.  
 Người dùng có thể nhắn tin, tương tác bài post, và cập nhật trạng thái ngay **lập tức** nhờ vào WebSocket — **không cần F5!**
 
 ---
