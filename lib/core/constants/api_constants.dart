@@ -24,4 +24,11 @@ class ApiConstants {
   // Chat endpoints
   static const String recentChatsEndpoint = '/chat/recent';
   static const String directChatMessagesEndpoint = '/chat/direct';
+
+  //Story endpoints
+  static const String storiesEndpoint = '/stories';
+  static const String storyByIdEndpoint = '/stories/feed';
+  static const String userStoriesEndpoint = '/stories/my/';
+  static String likeStoryEndpoint(String storyId) => '/stories/$storyId/like';
+  static const String createHighlightEndpoint = '/stories/highlights';
 } 

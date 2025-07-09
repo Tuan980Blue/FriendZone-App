@@ -12,6 +12,7 @@ import 'package:friendzoneapp/presentation/blocs/notification/notification_bloc.
 import '../../di/injection_container.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/posts/get_posts_usecase.dart';
+import '../../domain/usecases/storys/get_story_feed_usecase.dart';
 import '../../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
@@ -36,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   final UpdateProfileUseCase _updateProfileUseCase = sl<UpdateProfileUseCase>();
   final FollowUserUseCase _followUserUseCase = sl<FollowUserUseCase>();
   final UnfollowUserUseCase _unfollowUserUseCase = sl<UnfollowUserUseCase>();
+  final GetStoryFeedUseCase _getStoryFeedUseCase = sl<GetStoryFeedUseCase>();
 
   late final List<Widget> _pages;
 
@@ -49,7 +51,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pages = [
-      PostsPage(getPostsUseCase: _getPostsUseCase),
+      PostsPage(
+        getPostsUseCase: _getPostsUseCase,
+        getStoryFeedUseCase: _getStoryFeedUseCase,
+      ),
       UserSuggestionsPage(getUserSuggestionsUseCase: _getUserSuggestionsUseCase),
       const NotificationsScreen(),
       ProfileScreen(
