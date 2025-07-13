@@ -27,6 +27,7 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
   String _mediaType = 'IMAGE';
   String _location = '';
   String _filter = 'Normal';
+  bool _isCreatingStory = false;
 
   @override
   void initState() {
@@ -55,7 +56,7 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
       barrierDismissible: false,
       builder: (context) {
         return Dialog(
-          insetPadding: EdgeInsets.zero, // Loại bỏ khoảng trắng mặc định
+          insetPadding: EdgeInsets.zero,
           backgroundColor: Colors.white,
           child: SizedBox.expand(
             child: Scaffold(
@@ -140,6 +141,7 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
                           ),
                           ElevatedButton(
                             onPressed: () async {
+                              if (_isCreatingStory) return;
                               if (!_formKey.currentState!.validate()) return;
 
                               final uploadUseCase = sl<UploadStoryMediaUseCase>();

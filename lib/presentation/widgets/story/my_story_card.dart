@@ -95,6 +95,14 @@ class _MyStoryCardState extends State<MyStoryCard> {
                     builder: (_) => GenericStoryViewScreen(
                       stories: stories,
                       isMyStory: true,
+                      onDeleted: (deletedStoryId) {
+                        setState(() {
+                          _storiesFuture = _storiesFuture.then(
+                                (stories) => stories.where((story) => story.id != deletedStoryId).toList(),
+                          );
+                        });
+                      },
+
                     ),
                   ),
                 );

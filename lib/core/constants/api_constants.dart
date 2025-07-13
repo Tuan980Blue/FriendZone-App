@@ -31,4 +31,5 @@ class ApiConstants {
   static const String userStoriesEndpoint = '/stories/my/';
   static String likeStoryEndpoint(String storyId) => '/stories/$storyId/like';
   static const String createHighlightEndpoint = '/stories/highlights';
+  static String deleteStoryEndpoint(String storyId) => '/stories/$storyId';
 } 

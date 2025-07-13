@@ -10,6 +10,7 @@ import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
+import '../widgets/story/story_option_dialog.dart';
 import 'highlight_stories_screen.dart';
 import 'highlight_viewer_screen.dart';
 import 'login_screen.dart';
@@ -940,8 +941,10 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             leading: const Icon(Icons.add_a_photo),
             title: const Text('Tạo tin'),
             onTap: () {
-              Navigator.pop(context);
-              // TODO: Chuyển sang màn tạo tin
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const StoryOptionDialog(user: _currentUser)),
+              );
             },
           ),
           ListTile(

@@ -8,11 +8,13 @@ import '../../domain/entities/story.dart';
 class GenericStoryViewScreen extends StatefulWidget {
   final List<Story> stories;
   final bool isMyStory;
+  final void Function(String deletedStoryId)? onDeleted;
 
   const GenericStoryViewScreen({
     super.key,
     required this.stories,
     required this.isMyStory,
+    this.onDeleted,
   });
 
   @override
@@ -27,13 +29,54 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
   @override
   void initState() {
     super.initState();
-    isLiked = widget.stories.first.isLikedByCurrentUser; // Lấy trạng thái ban đầu
+    isLiked = widget.stories.first.isLikedByCurrentUser;
   }
 
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  void _handleDeleteStory() async {
+    final storyId = widget.stories.first.id;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Xoá Story"),
+        content: const Text("Bạn có chắc chắn muốn xoá story này không?"),
+        actions: [
+          TextButton(
+            child: const Text("Hủy"),
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          TextButton(
+            child: const Text("Xoá", style: TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await sl<StoryRemoteDataSource>().deleteStory(storyId);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('🗑️ Story đã được xoá')),
+      );
+
+      widget.onDeleted?.call(widget.stories.first.id);
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (kDebugMode) print("Lỗi xoá story: $e");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi xoá story: ${e.toString()}')),
+      );
+    }
   }
 
   @override
@@ -105,6 +148,11 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
                       ),
                       const SizedBox(width: 12),
                       const Icon(Icons.bookmark_border, color: Colors.white, size: 20),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.white, size: 25),
+                        onPressed: _handleDeleteStory,
+                      ),
                     ],
                   ),
                 ),
@@ -124,7 +172,7 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
                       await sl<StoryRemoteDataSource>().likeStory(storyId);
 
                       setState(() {
-                        isLiked = true; // Cập nhật UI khi like
+                        isLiked = true;
                       });
 
                       ScaffoldMessenger.of(context).showSnackBar(
