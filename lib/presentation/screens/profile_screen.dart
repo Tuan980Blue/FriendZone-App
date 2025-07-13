@@ -943,7 +943,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const StoryOptionDialog(user: _currentUser)),
+                MaterialPageRoute(builder: (_) => StoryOptionDialog(user: _user!)),
               );
             },
           ),

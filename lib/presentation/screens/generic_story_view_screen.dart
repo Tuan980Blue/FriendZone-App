@@ -4,6 +4,7 @@ import 'package:story_view/story_view.dart';
 import '../../data/datasources/remote/story_remote_data_source.dart';
 import '../../di/injection_container.dart';
 import '../../domain/entities/story.dart';
+import 'highlight_stories_screen.dart';
 
 class GenericStoryViewScreen extends StatefulWidget {
   final List<Story> stories;
@@ -79,6 +80,18 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
     }
   }
 
+  void _navigateToCreateHighlight() {
+    final story = widget.stories.first;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const HighlightCreationScreen(),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final storyItems = widget.stories.map((story) {
@@ -147,7 +160,10 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
                         style: const TextStyle(color: Colors.white, fontSize: 14),
                       ),
                       const SizedBox(width: 12),
-                      const Icon(Icons.bookmark_border, color: Colors.white, size: 20),
+                      IconButton(
+                        icon: const Icon(Icons.bookmark_border, color: Colors.white, size: 20),
+                        onPressed: _navigateToCreateHighlight,
+                      ),
                       const SizedBox(width: 12),
                       IconButton(
                         icon: const Icon(Icons.delete_outline, color: Colors.white, size: 25),
