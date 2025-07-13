@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../data/models/chat_model.dart';
 import '../blocs/chat/chat_bloc.dart';
 import '../blocs/chat/chat_event.dart';
 import '../blocs/chat/chat_state.dart';
@@ -16,7 +17,9 @@ import '../../domain/usecases/users/unfollow_user_usecase.dart';
 import '../../di/injection_container.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'dart:convert';
+import 'dart:async';
 import 'profile_screen.dart';
+import '../../services/chat_service.dart';
 
 class DirectChatMessagesScreen extends StatefulWidget {
   final String userId;
@@ -47,10 +50,18 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
   late AnimationController _typingAnimationController;
   late AnimationController _sendButtonAnimationController;
   late Animation<double> _sendButtonScaleAnimation;
+  late ChatService _chatService;
+  StreamSubscription<ChatModel>? _messageSubscription;
+  StreamSubscription<String>? _errorSubscription;
+  
+  // Add message cache to avoid unnecessary reloads
+  final List<Chat> _cachedMessages = [];
+  bool _isInitialLoad = true;
 
   @override
   void initState() {
     super.initState();
+    _initializeServices();
     _loadCurrentUser();
     _loadMessages();
     _scrollController.addListener(_onScroll);
@@ -78,25 +89,6 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
     _messageController.addListener(_onTextChanged);
   }
 
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _messageController.dispose();
-    _messageFocusNode.dispose();
-    _typingAnimationController.dispose();
-    _sendButtonAnimationController.dispose();
-    super.dispose();
-  }
-
-  void _onTextChanged() {
-    final hasText = _messageController.text.trim().isNotEmpty;
-    if (hasText != _isTyping) {
-      setState(() {
-        _isTyping = hasText;
-      });
-    }
-  }
-
   Future<void> _loadCurrentUser() async {
     try {
       final getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
@@ -113,7 +105,6 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
     try {
       final prefs = await SharedPreferences.getInstance();
       final userData = prefs.getString('user_data');
-
       if (userData != null) {
         try {
           final Map<String, dynamic> userJson = json.decode(userData);
@@ -123,12 +114,100 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
               currentUserId = userId;
             });
           }
-        } catch (e) {
-          // Handle JSON parsing error
-        }
+        } catch (e) {}
       }
-    } catch (e) {
-      // Handle SharedPreferences error
+    } catch (e) {}
+  }
+
+  // --- Auto scroll to bottom after adding message ---
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _addMessageToCache(Chat message) {
+    final existingMessageIndex = _cachedMessages.indexWhere((m) =>
+      m.id == message.id ||
+      (m.id.startsWith('temp_') && m.content == message.content && m.senderId == message.senderId)
+    );
+    if (existingMessageIndex == -1) {
+      setState(() {
+        _cachedMessages.insert(0, message); // Thêm vào đầu danh sách
+      });
+      _scrollToBottom();
+
+    } else {
+      setState(() {
+        _cachedMessages[existingMessageIndex] = message;
+      });
+      _scrollToBottom();
+
+    }
+  }
+
+  // --- Sử dụng _addMessageToCache ở mọi nơi thêm message ---
+
+  void _initializeServices() {
+    _chatService = sl<ChatService>();
+    _chatService.initialize();
+    _setupTimeagoLocale();
+    _messageSubscription = _chatService.messageStream.listen((message) {
+      if (mounted && (message.senderId == widget.userId || message.receiverId == widget.userId)) {
+        _addMessageToCache(message);
+      }
+    });
+    _errorSubscription = _chatService.errorStream.listen((error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi kết nối: $error'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    });
+  }
+
+  void _setupTimeagoLocale() {
+    timeago.setLocaleMessages('vi', timeago.ViMessages());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _messageController.dispose();
+    _messageFocusNode.dispose();
+    _typingAnimationController.dispose();
+    _sendButtonAnimationController.dispose();
+    
+    // Cancel stream subscriptions
+    _messageSubscription?.cancel();
+    _errorSubscription?.cancel();
+    
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    final hasText = _messageController.text.trim().isNotEmpty;
+    if (hasText != _isTyping) {
+      setState(() {
+        _isTyping = hasText;
+      });
+    }
+    
+    // Send typing indicator with debounce
+    if (hasText) {
+      _chatService.sendTypingIndicator(widget.userId, true);
+    } else {
+      // Stop typing indicator
+      _chatService.sendTypingIndicator(widget.userId, false);
     }
   }
 
@@ -164,31 +243,22 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
   void _sendMessage() {
     final message = _messageController.text.trim();
     if (message.isEmpty || _isSendingMessage) return;
-
-    // Animate send button
+    if (currentUserId == null) {
+      return;
+    }
     _sendButtonAnimationController.forward().then((_) {
       _sendButtonAnimationController.reverse();
     });
-
     setState(() {
       _isSendingMessage = true;
     });
-
-    // TODO: Implement send message functionality
-    // context.read<ChatBloc>().add(SendDirectMessage(
-    //   receiverId: widget.userId,
-    //   content: message,
-    // ));
-
+    context.read<ChatBloc>().add(SendDirectMessage(
+      receiverId: widget.userId,
+      content: message,
+      currentUserId: currentUserId!,
+    ));
     _messageController.clear();
     _messageFocusNode.unfocus();
-
-    // Simulate sending for now
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        _isSendingMessage = false;
-      });
-    });
   }
 
   void _popWithAnimation() {
@@ -214,6 +284,11 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (currentUserId == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return WillPopScope(
       onWillPop: () async {
         _popWithAnimation();
@@ -232,14 +307,44 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
                     setState(() {
                       _currentPage = state.page;
                       _isLoadingMore = false;
+                      _isInitialLoad = false;
+                      if (state.page == 1) {
+                        _cachedMessages.clear();
+                        _cachedMessages.addAll(state.messages.reversed); // Đảo ngược để phù hợp insert(0, ...)
+                      } else {
+                        for (final message in state.messages) {
+                          if (!_cachedMessages.any((m) => m.id == message.id)) {
+                            _cachedMessages.insert(0, message);
+                          }
+                        }
+                      }
+                    });
+                  } else if (state is MessageSent) {
+                    setState(() {
+                      _isSendingMessage = false;
+                    });
+                    _addMessageToCache(state.message);
+                  } else if (state is MessageSendError) {
+                    setState(() {
+                      _isSendingMessage = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Lỗi gửi tin nhắn: ${state.message}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  } else if (state is SendingMessage) {
+                    setState(() {
+                      _isSendingMessage = true;
                     });
                   }
                 },
                 builder: (context, state) {
-                  if (state is DirectChatMessagesLoading && _currentPage == 1) {
+                  if (state is DirectChatMessagesLoading && _isInitialLoad) {
                     return _buildLoadingState();
-                  } else if (state is DirectChatMessagesLoaded) {
-                    return _buildMessagesList(state);
+                  } else if (state is DirectChatMessagesLoaded || _cachedMessages.isNotEmpty) {
+                    return _buildMessagesList(_cachedMessages);
                   } else if (state is DirectChatMessagesError) {
                     return _buildErrorWidget(state.message);
                   } else {
@@ -248,8 +353,6 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
                 },
               ),
             ),
-
-            // Message input
             _buildMessageInput(),
           ],
         ),
@@ -330,22 +433,34 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
                       ),
                       Row(
                         children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.green,
-                              shape: BoxShape.circle,
-                            ),
+                          StreamBuilder<bool>(
+                            stream: _chatService.connectionStatusStream,
+                            builder: (context, snapshot) {
+                              final isConnected = snapshot.data ?? false;
+                              return Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: isConnected ? Colors.green : Colors.grey,
+                                  shape: BoxShape.circle,
+                                ),
+                              );
+                            },
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            'Trực tuyến',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.green.shade600,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          StreamBuilder<bool>(
+                            stream: _chatService.connectionStatusStream,
+                            builder: (context, snapshot) {
+                              final isConnected = snapshot.data ?? false;
+                              return Text(
+                                isConnected ? 'Trực tuyến' : 'Ngoại tuyến',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isConnected ? Colors.green.shade600 : Colors.grey.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -358,6 +473,29 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
         },
       ),
       actions: [
+        // Typing indicator
+        StreamBuilder<Map<String, bool>>(
+          stream: _chatService.typingStream,
+          builder: (context, snapshot) {
+            final typingUsers = snapshot.data ?? {};
+            final isTyping = typingUsers[widget.userId] == true;
+            
+            if (isTyping) {
+              return const Padding(
+                padding: EdgeInsets.only(right: 16.0),
+                child: Text(
+                  'đang nhập...',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
         Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -374,18 +512,17 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
     );
   }
 
-  Widget _buildMessagesList(DirectChatMessagesLoaded state) {
-    if (state.messages.isEmpty) {
+  Widget _buildMessagesList(List<Chat> messages) {
+    if (messages.isEmpty) {
       return _buildEmptyState();
     }
-
     return ListView.builder(
       controller: _scrollController,
       reverse: true,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: state.messages.length + (_isLoadingMore ? 1 : 0),
+      itemCount: messages.length + (_isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index == state.messages.length) {
+        if (index == messages.length) {
           return Container(
             padding: const EdgeInsets.all(16),
             child: Center(
@@ -411,8 +548,7 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
             ),
           );
         }
-
-        final message = state.messages[state.messages.length - 1 - index];
+        final message = messages[index]; // Không đảo ngược index nữa
         return _buildMessageItem(message);
       },
     );
@@ -420,7 +556,6 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
 
   Widget _buildMessageItem(Chat message) {
     final isCurrentUser = message.senderId == currentUserId;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -447,7 +582,6 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
               ),
             ),
           ],
-
           Flexible(
             child: Container(
               constraints: BoxConstraints(
@@ -493,9 +627,7 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
                       ],
                     ),
                   ),
-                  
                   const SizedBox(height: 4),
-                  
                   Padding(
                     padding: EdgeInsets.only(
                       left: isCurrentUser ? 0 : 8,

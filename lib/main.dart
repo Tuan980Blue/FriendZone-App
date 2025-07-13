@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<FollowersBloc>(
           create: (context) => di.sl<FollowersBloc>(),
-        ),
+        )
       ],
       child: MaterialApp(
         title: 'FriendZone',
