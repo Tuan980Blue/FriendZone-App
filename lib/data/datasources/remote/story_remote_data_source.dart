@@ -25,6 +25,7 @@ abstract class StoryRemoteDataSource {
   Future<void> createHighlight({required String name, required List<String> storyIds});
   Future<List<HighlightModel>> fetchHighlights({required String userId});
   Future<void> deleteStory(String storyId);
+  Future<void> deleteHighlight(String storyId);
 }
 
 class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
@@ -191,5 +192,16 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
     debugPrint("✅ Đã xoá story $storyId");
   }
 
+  @override
+  Future<void> deleteHighlight(String storyId) async {
+    final response = await _apiClient.delete(ApiConstants.deleteHightLightEndpoint(storyId));
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final data = json.decode(response.body);
+      throw ServerException(data['message'] ?? 'Xoá highlight thất bại');
+    }
+
+    debugPrint("✅ Đã xoá highlight $storyId");
+  }
 
 }

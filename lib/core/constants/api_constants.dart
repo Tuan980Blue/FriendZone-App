@@ -32,4 +32,5 @@ class ApiConstants {
   static String likeStoryEndpoint(String storyId) => '/stories/$storyId/like';
   static const String createHighlightEndpoint = '/stories/highlights';
   static String deleteStoryEndpoint(String storyId) => '/stories/$storyId';
+  static String deleteHightLightEndpoint(String storyId) => '/stories/highlights/$storyId';
 } 

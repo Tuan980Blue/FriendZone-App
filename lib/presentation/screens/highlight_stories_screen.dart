@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../di/injection_container.dart';
 import '../../../data/datasources/remote/story_remote_data_source.dart';
 import '../../../data/models/story_model.dart';
+import '../widgets/common/custom_snackbar.dart';
 
 class HighlightCreationScreen extends StatefulWidget {
   const HighlightCreationScreen({super.key});
@@ -49,13 +50,15 @@ class _HighlightCreationScreenState extends State<HighlightCreationScreen> {
         storyIds: _selectedStoryIds.toList(),
       );
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Đã tạo tin nổi bật thành công')),
+      CustomSnackBar.showSuccess(
+        context: context,
+        message: "Tạo tin nổi bật thành công!",
       );
     } catch (e) {
       debugPrint('Lỗi khi tạo tin nổi bật: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi khi tạo tin nổi bật: ${e.toString()}')),
+      CustomSnackBar.showError(
+        context: context,
+        message: "Lỗi khi tạo tin nổi bật: $e",
       );
     } finally {
       setState(() => _isSubmitting = false);

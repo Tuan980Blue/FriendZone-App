@@ -5,6 +5,7 @@ import '../../../di/injection_container.dart';
 import '../../../domain/entities/user.dart';
 import '../../../domain/usecases/storys/create_story_usecase.dart';
 import '../../../domain/usecases/storys/upload_story_media_usecase.dart';
+import '../common/custom_snackbar.dart';
 
 class StoryOptionDialog extends StatefulWidget {
   final User user;
@@ -150,8 +151,9 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
                               final mediaUrl = await uploadUseCase.call(imageFile);
                               if (mediaUrl == null) {
                                 Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Tải ảnh thất bại')),
+                                CustomSnackBar.showError(
+                                  context: context,
+                                  message: "Không thể tải lên media",
                                 );
                                 return;
                               }
@@ -168,13 +170,15 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
                                 );
                                 Navigator.pop(context);
                                 Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Tạo tin thành công!')),
+                                CustomSnackBar.showSuccess(
+                                  context: context,
+                                  message: "Tạo tin thành công",
                                 );
                               } catch (e) {
                                 Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Tạo tin thất bại')),
+                                CustomSnackBar.showError(
+                                  context: context,
+                                  message: "Lỗi khi tạo tin",
                                 );
                               }
                             },

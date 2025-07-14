@@ -4,6 +4,7 @@ import 'package:story_view/story_view.dart';
 import '../../data/datasources/remote/story_remote_data_source.dart';
 import '../../di/injection_container.dart';
 import '../../domain/entities/story.dart';
+import '../widgets/common/custom_snackbar.dart';
 import 'highlight_stories_screen.dart';
 
 class GenericStoryViewScreen extends StatefulWidget {
@@ -30,7 +31,18 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
   @override
   void initState() {
     super.initState();
-    isLiked = widget.stories.first.isLikedByCurrentUser;
+    if (widget.stories.isNotEmpty) {
+      isLiked = widget.stories.first.isLikedByCurrentUser;
+    } else {
+      isLiked = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+        CustomSnackBar.showError(
+          context: context,
+          message: "Không có story nào để hiển thị",
+        );
+      });
+    }
   }
 
   @override
@@ -65,8 +77,9 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
     try {
       await sl<StoryRemoteDataSource>().deleteStory(storyId);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('🗑️ Story đã được xoá')),
+      CustomSnackBar.showSuccess(
+          context: context,
+          message: "Đã xoá story thành công",
       );
 
       widget.onDeleted?.call(widget.stories.first.id);
@@ -74,15 +87,14 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
     } catch (e) {
       if (kDebugMode) print("Lỗi xoá story: $e");
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi xoá story: ${e.toString()}')),
+      CustomSnackBar.showError(
+        context: context,
+        message: "Lỗi khi xoá story",
       );
     }
   }
 
   void _navigateToCreateHighlight() {
-    final story = widget.stories.first;
-
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -191,8 +203,9 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
                         isLiked = true;
                       });
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('❤️ Bạn đã thích story')),
+                      CustomSnackBar.showSuccess(
+                        context: context,
+                        message: "Đã thích story",
                       );
                     } catch (e, stackTrace) {
                       if (kDebugMode) {
@@ -200,8 +213,9 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
                         print("Chi tiết lỗi: $stackTrace");
                       }
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Lỗi khi like: ${e.toString()}')),
+                      CustomSnackBar.showError(
+                        context: context,
+                        message: "Lỗi khi like",
                       );
                     }
                   },
