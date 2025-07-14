@@ -8,6 +8,7 @@ import '../../models/direct_chat_messages_model.dart';
 abstract class ChatRemoteDataSource {
   Future<List<ChatModel>> getRecentChats();
   Future<DirectChatMessagesModel> getDirectChatMessages(String userId, {int page = 1, int limit = 50});
+  Future<ChatModel> sendMessage(String receiverId, String content);
 }
 
 class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
@@ -63,6 +64,31 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       }
     } catch (e) {
       if (e is ServerException) rethrow;
+      throw ServerException('Network error occurred: $e');
+    }
+  }
+
+  @override
+  Future<ChatModel> sendMessage(String receiverId, String content) async {
+    try {
+      final endpoint = '${ApiConstants.sendMessageEndpoint}/$receiverId';
+      final response = await _apiClient.post(endpoint, body: {
+        'content': content,
+      });
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (data['success'] == true && data['data'] != null) {
+          return ChatModel.fromJson(data['data']);
+        } else {
+          throw ServerException('Failed to send message: Invalid response format');
+        }
+      } else {
+        throw ServerException('Failed to send message: ${response.statusCode} - ${data['message'] ?? 'Unknown error'}');
+      }
+    } catch (e) {
+      print('DEBUG: sendMessage error = $e');
       throw ServerException('Network error occurred: $e');
     }
   }

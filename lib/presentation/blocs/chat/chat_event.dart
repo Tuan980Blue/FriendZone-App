@@ -39,4 +39,19 @@ class LoadMoreDirectChatMessages extends ChatEvent {
 
   @override
   List<Object?> get props => [userId, page, limit];
+}
+
+class SendDirectMessage extends ChatEvent {
+  final String receiverId;
+  final String content;
+  final String currentUserId;
+
+  const SendDirectMessage({
+    required this.receiverId,
+    required this.content,
+    required this.currentUserId,
+  });
+
+  @override
+  List<Object?> get props => [receiverId, content, currentUserId];
 } 

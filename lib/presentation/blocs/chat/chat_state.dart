@@ -59,4 +59,31 @@ class DirectChatMessagesError extends ChatState {
 
   @override
   List<Object?> get props => [message];
+}
+
+class SendingMessage extends ChatState {
+  final String content;
+
+  const SendingMessage(this.content);
+
+  @override
+  List<Object?> get props => [content];
+}
+
+class MessageSent extends ChatState {
+  final Chat message;
+
+  const MessageSent(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class MessageSendError extends ChatState {
+  final String message;
+
+  const MessageSendError(this.message);
+
+  @override
+  List<Object?> get props => [message];
 } 
