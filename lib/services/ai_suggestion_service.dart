@@ -12,7 +12,7 @@ class AiSuggestionService {
   }) async {
     final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey');
     final prompt =
-        'Hãy gợi ý $numQuestions câu hỏi để giúp người dùng tìm hiểu sâu hơn về nội dung họ đang xem bài đăng sau. Chỉ trả về danh sách câu hỏi, mỗi câu hỏi trên một dòng (không quá 15 từ), không giải thích thêm.\nBài đăng: "$postContent"';
+        'Hãy gợi ý $numQuestions câu hỏi để giúp người dùng tìm hiểu sâu hơn về nội dung họ đang xem bài đăng sau. Chỉ trả về danh sách câu hỏi, mỗi câu hỏi trên một dòng (không quá 13 từ), không giải thích thêm.\nBài đăng: "$postContent"';
     final body = jsonEncode({
       "contents": [
         {
