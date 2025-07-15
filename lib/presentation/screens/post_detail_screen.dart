@@ -49,7 +49,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
   bool _showAppBarTitle = false;
 
   // Gemini API Key (hardcoded - không khuyến nghị cho môi trường sản xuất)
-  static const String _geminiApiKey = 'AIzaSyDeLLQ9_2-MRc3cFNHUOzZiNRdcMRXVcWA';
+  static const String _geminiApiKey = 'AIzaSyAKXT0Wdq2gk0XnUS_tCVCxB7qF9nAnb-w';
 
   @override
   void initState() {
