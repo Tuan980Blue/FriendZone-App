@@ -49,7 +49,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
   bool _showAppBarTitle = false;
 
   // Gemini API Key (hardcoded - không khuyến nghị cho môi trường sản xuất)
-  static const String _geminiApiKey = 'AIzaSyD0Y1RZNI-PBAsMNtZhDGfFKWefYIa9Wac';
+  static const String _geminiApiKey = 'AIzaSyDeLLQ9_2-MRc3cFNHUOzZiNRdcMRXVcWA';
 
   @override
   void initState() {
@@ -157,7 +157,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> with SingleTickerPr
 
     try {
       final response = await http.post(
-        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_geminiApiKey'),
+        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$_geminiApiKey'),
         headers: {
           'Content-Type': 'application/json',
         },

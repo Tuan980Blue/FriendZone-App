@@ -37,6 +37,9 @@ import '../domain/usecases/users/get_user_suggestions_usecase.dart';
 import '../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../domain/usecases/chat/get_recent_chats_usecase.dart';
 import '../domain/usecases/chat/get_direct_chat_messages_usecase.dart';
+import '../domain/usecases/chat/send_message_usecase.dart';
+import '../services/socket_service.dart';
+import '../services/chat_service.dart';
 import '../presentation/blocs/notification/notification_bloc.dart';
 import '../presentation/blocs/chat/chat_bloc.dart';
 import '../presentation/blocs/following/following_bloc.dart';
@@ -123,9 +126,14 @@ Future<void> init() async {
   sl.registerLazySingleton(() => MarkAllNotificationsAsReadUseCase(sl()));
   sl.registerLazySingleton(() => GetUnreadNotificationsCountUseCase(sl()));
 
+  // Services
+  sl.registerLazySingleton(() => SocketService());
+  sl.registerLazySingleton(() => ChatService(sl(), sl()));
+
   // Chat use cases
   sl.registerLazySingleton(() => GetRecentChatsUseCase(sl()));
   sl.registerLazySingleton(() => GetDirectChatMessagesUseCase(sl()));
+  sl.registerLazySingleton(() => SendMessageUseCase(sl()));
 
   // Story use cases
   sl.registerLazySingleton(() => UploadStoryMediaUseCase(sl()));
@@ -150,6 +158,7 @@ Future<void> init() async {
     () => ChatBloc(
       getRecentChatsUseCase: sl(),
       getDirectChatMessagesUseCase: sl(),
+      sendMessageUseCase: sl(),
     ),
   );
 

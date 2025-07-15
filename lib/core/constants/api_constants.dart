@@ -24,6 +24,7 @@ class ApiConstants {
   // Chat endpoints
   static const String recentChatsEndpoint = '/chat/recent';
   static const String directChatMessagesEndpoint = '/chat/direct';
+  static const String sendMessageEndpoint = '/chat/send';
 
   //Story endpoints
   static const String storiesEndpoint = '/stories';

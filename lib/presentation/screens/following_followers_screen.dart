@@ -14,6 +14,7 @@ import '../../domain/usecases/users/follow_user_usecase.dart';
 import '../../domain/usecases/users/unfollow_user_usecase.dart';
 import 'profile_screen.dart';
 import '../theme/app_page_transitions.dart';
+import 'chat_direct_messages_screen.dart';
 
 class FollowingFollowersScreen extends StatefulWidget {
   final int initialTabIndex;
@@ -532,15 +533,12 @@ class _FollowingFollowersScreenState extends State<FollowingFollowersScreen>
   }
 
   void _handleMessageUser(FollowingUser user) {
-    // TODO: Navigate to chat screen with this user
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Message ${user.fullName}'),
-        duration: const Duration(seconds: 2),
-        backgroundColor: Colors.black,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+    Navigator.of(context).push(
+      AppPageTransitions.chatTransition(
+        DirectChatMessagesScreen(
+          userId: user.id,
+          userName: user.fullName,
+          userAvatar: user.avatar,
         ),
       ),
     );

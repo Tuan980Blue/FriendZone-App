@@ -17,6 +17,7 @@ import '../screens/profile_screen.dart';
 import '../../di/injection_container.dart';
 import '../../core/network/api_client.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:friendzoneapp/presentation/widgets/ai_suggestion_widget.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
@@ -508,6 +509,19 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
               });
             },
             postContent: widget.post.content, // Truyền nội dung bài đăng
+          ),
+          // AI Suggestion Widget
+          AiSuggestionWidget(
+            postContent: widget.post.content,
+            imageUrls: widget.post.images,
+            location: widget.post.location,
+            authorName: widget.post.author.username,
+            onSuggestionTap: (suggestion) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Bạn đã chọn: $suggestion')),
+              );
+            },
+            apiKey: 'AIzaSyDeLLQ9_2-MRc3cFNHUOzZiNRdcMRXVcWA', // <-- Thay bằng API key thật của bạn
           ),
         ],
       ),

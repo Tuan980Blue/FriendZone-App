@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/usecases/chat/get_direct_chat_messages_usecase.dart';
 import '../../../domain/usecases/chat/get_recent_chats_usecase.dart';
+import '../../../domain/usecases/chat/send_message_usecase.dart';
 import '../../../domain/entities/chat.dart';
 import 'chat_event.dart';
 import 'chat_state.dart';
@@ -10,18 +11,22 @@ import 'chat_state.dart';
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final GetRecentChatsUseCase _getRecentChatsUseCase;
   final GetDirectChatMessagesUseCase _getDirectChatMessagesUseCase;
+  final SendMessageUseCase _sendMessageUseCase;
 
   ChatBloc({
     required GetRecentChatsUseCase getRecentChatsUseCase,
     required GetDirectChatMessagesUseCase getDirectChatMessagesUseCase,
+    required SendMessageUseCase sendMessageUseCase,
   })  : _getRecentChatsUseCase = getRecentChatsUseCase,
         _getDirectChatMessagesUseCase = getDirectChatMessagesUseCase,
+        _sendMessageUseCase = sendMessageUseCase,
         super(ChatInitial()) {
     print('🎯 [ChatBloc] ChatBloc initialized');
     on<LoadRecentChats>(_onLoadRecentChats);
     on<RefreshChats>(_onRefreshChats);
     on<LoadDirectChatMessages>(_onLoadDirectChatMessages);
     on<LoadMoreDirectChatMessages>(_onLoadMoreDirectChatMessages);
+    on<SendDirectMessage>(_onSendDirectMessage);
   }
 
   Future<void> _onLoadRecentChats(
@@ -148,6 +153,40 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       print('❌ [ChatBloc] Error in _onLoadMoreDirectChatMessages: $e');
       emit(DirectChatMessagesError(e.toString()));
       print('🎯 [ChatBloc] Emitted DirectChatMessagesError state');
+    }
+  }
+
+  Future<void> _onSendDirectMessage(
+    SendDirectMessage event,
+    Emitter<ChatState> emit,
+  ) async {
+    print('🎯 [ChatBloc] SendDirectMessage event received for user: ${event.receiverId}');
+    emit(SendingMessage(event.content));
+    print('🎯 [ChatBloc] Emitted SendingMessage state');
+    
+    try {
+      print('🎯 [ChatBloc] Calling sendMessageUseCase...');
+      final message = await _sendMessageUseCase(SendMessageParams(
+        receiverId: event.receiverId,
+        content: event.content,
+        currentUserId: event.currentUserId,
+      ));
+      
+      print('🎯 [ChatBloc] sendMessageUseCase returned: ${message?.id ?? 'null'}');
+      
+      if (message != null) {
+        print('🎯 [ChatBloc] Message sent successfully with ID: ${message.id}');
+        emit(MessageSent(message));
+        print('🎯 [ChatBloc] Emitted MessageSent state');
+      } else {
+        print('❌ [ChatBloc] Message send returned null');
+        emit(MessageSendError('Failed to send message'));
+        print('🎯 [ChatBloc] Emitted MessageSendError state');
+      }
+    } catch (e) {
+      print('❌ [ChatBloc] Error in _onSendDirectMessage: $e');
+      emit(MessageSendError(e.toString()));
+      print('🎯 [ChatBloc] Emitted MessageSendError state');
     }
   }
 } 
