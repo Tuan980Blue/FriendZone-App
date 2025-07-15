@@ -94,14 +94,28 @@ class _HighlightCreationScreenState extends State<HighlightCreationScreen> {
           : Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Tên tin nổi bật',
-                border: OutlineInputBorder(),
-              ),
               onChanged: (_) => setState(() {}),
+              style: const TextStyle(fontSize: 16),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.edit_note, color: Colors.pink),
+                hintText: 'Nhập tên tin nổi bật',
+                labelText: 'Tên tin nổi bật',
+                labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+                filled: true,
+                fillColor: Colors.grey[100],
+                contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.pink, width: 2),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 8),

@@ -25,7 +25,8 @@ class GenericStoryViewScreen extends StatefulWidget {
 
 class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
   final controller = StoryController();
-
+  int currentStoryIndex = 0;
+  Story get currentStory => widget.stories[currentStoryIndex];
   late bool isLiked;
 
   @override
@@ -103,10 +104,39 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
     );
   }
 
+  Widget _buildLocationOverlay() {
+    final location = currentStory.location ?? '';
+    if (location.isEmpty) return const SizedBox.shrink();
+
+    return Positioned(
+      top: 60,
+      left: 16,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.location_on, size: 16, color: Colors.white),
+            const SizedBox(width: 4),
+            Text(
+              location,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
   void _showViewersDialog() async {
     final storyId = widget.stories.first.id;
 
     try {
+      controller.pause();
       final storyRemote = sl<StoryRemoteDataSource>();
 
       final results = await Future.wait([
@@ -121,38 +151,70 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
 
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Người đã xem"),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: viewers.length,
-              itemBuilder: (context, index) {
-                final viewer = viewers[index];
-                final isLiked = likedUserIds.contains(viewer.user.id);
-
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(viewer.user.avatar),
+        builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.remove_red_eye, color: Colors.grey, size: 24),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${viewers.length}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      const SizedBox(width: 24),
+                      const Icon(Icons.favorite, color: Colors.red, size: 24),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${likers.length}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                    ],
                   ),
-                  title: Text(viewer.user.fullName),
-                  subtitle: Text('@${viewer.user.username}'),
-                  trailing: isLiked
-                      ? const Icon(Icons.favorite, color: Colors.red, size: 20)
-                      : null,
-                );
-              },
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: viewers.length,
+                    itemBuilder: (context, index) {
+                      final viewer = viewers[index];
+                      final isLiked = likedUserIds.contains(viewer.user.id);
+
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(viewer.user.avatar),
+                        ),
+                        title: Text(viewer.user.fullName),
+                        subtitle: Text('@${viewer.user.username}'),
+                        trailing: isLiked
+                            ? const Icon(Icons.favorite, color: Colors.red, size: 20)
+                            : null,
+                      );
+                    },
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Đóng"),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Đóng"),
-            ),
-          ],
         ),
-      );
+    );
     } catch (e) {
       if (kDebugMode) print("Lỗi khi lấy viewers: $e");
 
@@ -162,8 +224,6 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
       );
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +255,7 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
             controller: controller,
             onComplete: () => Navigator.pop(context),
           ),
-
+          _buildLocationOverlay(),
           Positioned(
             top: 40,
             right: 16,
@@ -219,8 +279,6 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.remove_red_eye_outlined, color: Colors.white, size: 20),
-                      const SizedBox(width: 4),
                       IconButton(
                         icon: const Icon(Icons.group_outlined, color: Colors.white, size: 20),
                         onPressed: _showViewersDialog,
@@ -232,7 +290,7 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
                       ),
                       const SizedBox(width: 12),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.white, size: 25),
+                        icon: const Icon(Icons.delete_outline, color: Colors.white, size: 20),
                         onPressed: _handleDeleteStory,
                       ),
                     ],
