@@ -103,6 +103,67 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
     );
   }
 
+  void _showViewersDialog() async {
+    final storyId = widget.stories.first.id;
+
+    try {
+      final storyRemote = sl<StoryRemoteDataSource>();
+
+      final results = await Future.wait([
+        storyRemote.fetchStoryViews(storyId),
+        storyRemote.fetchStoryLikes(storyId),
+      ]);
+
+      final viewers = results[0];
+      final likers = results[1];
+
+      final likedUserIds = likers.map((e) => e.user.id).toSet();
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Người đã xem"),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: viewers.length,
+              itemBuilder: (context, index) {
+                final viewer = viewers[index];
+                final isLiked = likedUserIds.contains(viewer.user.id);
+
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage: NetworkImage(viewer.user.avatar),
+                  ),
+                  title: Text(viewer.user.fullName),
+                  subtitle: Text('@${viewer.user.username}'),
+                  trailing: isLiked
+                      ? const Icon(Icons.favorite, color: Colors.red, size: 20)
+                      : null,
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Đóng"),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) print("Lỗi khi lấy viewers: $e");
+
+      CustomSnackBar.showError(
+        context: context,
+        message: "Lỗi khi lấy danh sách người xem",
+      );
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -160,16 +221,9 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
                     children: [
                       const Icon(Icons.remove_red_eye_outlined, color: Colors.white, size: 20),
                       const SizedBox(width: 4),
-                      Text(
-                        '${widget.stories.first.viewCount}',
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
-                      ),
-                      const SizedBox(width: 12),
-                      const Icon(Icons.favorite_border, color: Colors.white, size: 20),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${widget.stories.first.likeCount}',
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                      IconButton(
+                        icon: const Icon(Icons.group_outlined, color: Colors.white, size: 20),
+                        onPressed: _showViewersDialog,
                       ),
                       const SizedBox(width: 12),
                       IconButton(

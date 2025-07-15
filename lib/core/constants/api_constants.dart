@@ -30,7 +30,12 @@ class ApiConstants {
   static const String storyByIdEndpoint = '/stories/feed';
   static const String userStoriesEndpoint = '/stories/my/';
   static String likeStoryEndpoint(String storyId) => '/stories/$storyId/like';
-  static const String createHighlightEndpoint = '/stories/highlights';
   static String deleteStoryEndpoint(String storyId) => '/stories/$storyId';
+  static String viewsStoryEndpoint(String storyId) => '/stories/$storyId/views';
+  static String likesStoryEndpoint(String storyId) => '/stories/$storyId/likes';
+
+  // Highlight endpoints
+  static const String createHighlightEndpoint = '/stories/highlights';
   static String deleteHightLightEndpoint(String storyId) => '/stories/highlights/$storyId';
+  static String highlightByUserIdEndpoint(String userId) => '/stories/highlights/$userId';
 } 
