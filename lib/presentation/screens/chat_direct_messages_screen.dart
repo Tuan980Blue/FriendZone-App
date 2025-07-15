@@ -20,6 +20,9 @@ import 'dart:convert';
 import 'dart:async';
 import 'profile_screen.dart';
 import '../../services/chat_service.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../widgets/location_message_widget.dart';
 
 class DirectChatMessagesScreen extends StatefulWidget {
   final String userId;
@@ -261,6 +264,68 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
     _messageFocusNode.unfocus();
   }
 
+  // Thêm hàm lấy vị trí và gửi message vị trí
+  Future<void> _shareLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vui lòng bật dịch vụ vị trí trên thiết bị.')),
+        );
+        return;
+      }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Bạn cần cấp quyền truy cập vị trí.')),
+          );
+          return;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Quyền truy cập vị trí bị từ chối vĩnh viễn.')),
+        );
+        return;
+      }
+      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final content = 'LOCATION:${position.latitude},${position.longitude}';
+      if (currentUserId == null) return;
+      // Thêm dialog xác nhận trước khi gửi vị trí
+      final shouldSend = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Xác nhận gửi vị trí'),
+            content: const Text('Bạn có chắc chắn muốn chia sẻ vị trí hiện tại của mình cho người này?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Gửi'),
+              ),
+            ],
+          );
+        },
+      );
+      if (shouldSend != true) return;
+      context.read<ChatBloc>().add(SendDirectMessage(
+        receiverId: widget.userId,
+        content: content,
+        currentUserId: currentUserId!,
+      ));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không thể lấy vị trí: $e')),
+      );
+    }
+  }
+
   void _popWithAnimation() {
     // Custom pop with smooth animation
     Navigator.of(context).pop();
@@ -280,6 +345,16 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
         ),
       ),
     );
+  }
+
+  // Thêm hàm mở Google Maps trên trình duyệt ngoài
+  Future<void> openMapInBrowser(double lat, double lng) async {
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      print('❌ Không thể mở trình duyệt với Google Maps URL.');
+    }
   }
 
   @override
@@ -556,6 +631,51 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
 
   Widget _buildMessageItem(Chat message) {
     final isCurrentUser = message.senderId == currentUserId;
+    // Kiểm tra nếu là message vị trí
+    if (message.content.startsWith('LOCATION:')) {
+      final coords = message.content.substring(9).split(',');
+      double? lat = double.tryParse(coords[0]);
+      double? lng = coords.length > 1 ? double.tryParse(coords[1]) : null;
+      if (lat != null && lng != null) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isCurrentUser) ...[
+                Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => _navigateToProfile(message.sender.id, message.sender.fullName),
+                    child: CircleAvatar(
+                      radius: 16,
+                      backgroundImage: message.sender.avatar != null
+                          ? NetworkImage(message.sender.avatar!)
+                          : null,
+                      backgroundColor: Colors.grey.shade200,
+                      child: message.sender.avatar == null
+                          ? Icon(Icons.person, size: 16, color: Colors.grey.shade600)
+                          : null,
+                    ),
+                  ),
+                ),
+              ],
+              Flexible(
+                child: LocationMessageWidget(
+                  latitude: lat!,
+                  longitude: lng!,
+                  isCurrentUser: isCurrentUser,
+                  onTapMap: () async {
+                    await openMapInBrowser(lat, lng);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    }
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -698,7 +818,23 @@ class _DirectChatMessagesScreenState extends State<DirectChatMessagesScreen>
                   ),
                 ),
               ),
-              
+              // Nút chia sẻ vị trí
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: IconButton(
+                  onPressed: _shareLocation,
+                  icon: Icon(
+                    Icons.location_on,
+                    size: 22,
+                    color: Colors.red.shade400,
+                  ),
+                  tooltip: 'Chia sẻ vị trí',
+                ),
+              ),
               const SizedBox(width: 12),
               
               // Message input field
