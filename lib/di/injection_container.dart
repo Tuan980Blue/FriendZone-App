@@ -51,6 +51,8 @@ import '../domain/usecases/users/follow_user_usecase.dart';
 import '../domain/usecases/users/unfollow_user_usecase.dart';
 import '../domain/usecases/users/get_following_users_usecase.dart';
 import '../domain/usecases/users/get_followers_users_usecase.dart';
+import '../domain/usecases/posts/update_post_usecase.dart';
+import '../domain/usecases/posts/delete_post_usecase.dart';
 
 final sl = GetIt.instance;
 
@@ -110,6 +112,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetPostsUseCase(sl()));
   sl.registerLazySingleton(() => CreatePostUseCase(sl()));
   sl.registerLazySingleton(() => UploadImageUseCase(sl()));
+  sl.registerLazySingleton(() => UpdatePostUseCase(sl()));
+  sl.registerLazySingleton(() => DeletePostUseCase(sl()));
 
   // User use cases
   sl.registerLazySingleton(() => GetUserSuggestionsUseCase(sl()));

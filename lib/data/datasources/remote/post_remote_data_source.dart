@@ -17,6 +17,14 @@ abstract class PostRemoteDataSource {
     required String content,
     required List<String> imageUrls,
   });
+  // Thêm abstract method
+  Future<Map<String, dynamic>> updatePost({
+    required String id,
+    required String content,
+  });
+  Future<Map<String, dynamic>> deletePost({
+    required String id,
+  });
 }
 
 class PostRemoteDataSourceImpl implements PostRemoteDataSource {
@@ -146,6 +154,60 @@ class PostRemoteDataSourceImpl implements PostRemoteDataSource {
       throw ServerException('Failed to create post. Status: ${response.statusCode}');
     } catch (e) {
       throw ServerException('Failed to create post: $e');
+    }
+  }
+
+  // Thêm method updatePost
+  @override
+  Future<Map<String, dynamic>> updatePost({
+    required String id,
+    required String content,
+  }) async {
+    try {
+      final response = await _apiClient.put(
+        '${ApiConstants.postsEndpoint}/$id',
+        body: {
+          'content': content,
+        },
+      );
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        if (jsonResponse['success'] == true) {
+          return jsonResponse;
+        }
+        throw ServerException('Failed to update post. Server returned success: false');
+      } else if (response.statusCode == 400 || response.statusCode == 403 || response.statusCode == 404) {
+        final jsonResponse = json.decode(response.body);
+        throw ServerException(jsonResponse['error'] ?? 'Failed to update post');
+      }
+      throw ServerException('Failed to update post. Status:  {response.statusCode}');
+    } catch (e) {
+      throw ServerException('Failed to update post: $e');
+    }
+  }
+
+  // Thêm method deletePost
+  @override
+  Future<Map<String, dynamic>> deletePost({
+    required String id,
+  }) async {
+    try {
+      final response = await _apiClient.delete(
+        '${ApiConstants.postsEndpoint}/$id',
+      );
+      if (response.statusCode == 200) {
+        final jsonResponse = json.decode(response.body);
+        if (jsonResponse['success'] == true) {
+          return jsonResponse;
+        }
+        throw ServerException('Failed to delete post. Server returned success: false');
+      } else if (response.statusCode == 403 || response.statusCode == 404) {
+        final jsonResponse = json.decode(response.body);
+        throw ServerException(jsonResponse['error'] ?? 'Failed to delete post');
+      }
+      throw ServerException('Failed to delete post. Status:  {response.statusCode}');
+    } catch (e) {
+      throw ServerException('Failed to delete post: $e');
     }
   }
 

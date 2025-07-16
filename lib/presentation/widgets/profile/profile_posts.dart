@@ -157,6 +157,11 @@ class _ProfilePostsState extends State<ProfilePosts> {
             onLike: () {
               _refreshPosts();
             },
+            onDelete: () {
+              setState(() {
+                _posts.removeAt(index);
+              });
+            },
           );
         },
       ),

@@ -18,6 +18,10 @@ import '../../di/injection_container.dart';
 import '../../core/network/api_client.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:friendzoneapp/presentation/widgets/ai_suggestion_widget.dart';
+import '../../domain/usecases/posts/update_post_usecase.dart';
+import '../../domain/usecases/posts/delete_post_usecase.dart';
+import 'package:flutter/services.dart';
+import 'common/custom_snackbar.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
@@ -25,6 +29,7 @@ class PostCard extends StatefulWidget {
   final VoidCallback? onComment;
   final VoidCallback? onShare;
   final VoidCallback? onSave;
+  final VoidCallback? onDelete;
 
   const PostCard({
     Key? key,
@@ -33,6 +38,7 @@ class PostCard extends StatefulWidget {
     this.onComment,
     this.onShare,
     this.onSave,
+    this.onDelete,
   }) : super(key: key);
 
   @override
@@ -50,11 +56,13 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
   int _currentImageIndex = 0;
   final PageController _pageController = PageController();
   bool _showHeart = false;
+  late String _postContent;
 
   @override
   void initState() {
     super.initState();
     _likeCount = widget.post.likeCount ?? 0;
+    _postContent = widget.post.content;
     _likeAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -194,6 +202,165 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
     });
   }
 
+  void _showPostOptionsMenu(BuildContext context) async {
+    final getCurrentUserUseCase = sl<GetCurrentUserUseCase>();
+    final updatePostUseCase = sl<UpdatePostUseCase>();
+    final deletePostUseCase = sl<DeletePostUseCase>();
+    final currentUser = await getCurrentUserUseCase();
+    final isOwner = currentUser.id == widget.post.author.id;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.link),
+                title: const Text('Sao chép link bài viết'),
+                onTap: () async {
+                  final postUrl = 'https://anhtuandev.id.vn/posts/${widget.post.id}';
+                  await Clipboard.setData(ClipboardData(text: postUrl));
+                  if (mounted) {
+                    CustomSnackBar.showSuccess(
+                      context: context,
+                      message: 'Đã sao chép link bài viết!',
+                    );
+                  }
+                  Navigator.pop(context);
+                },
+              ),
+              if (isOwner) ...[
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text('Chỉnh sửa bài viết'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final newContent = await showDialog<String>(
+                      context: context,
+                      builder: (context) {
+                        final controller = TextEditingController(text: _postContent);
+                        return AlertDialog(
+                          title: const Text('Chỉnh sửa nội dung'),
+                          content: TextField(
+                            controller: controller,
+                            maxLines: 5,
+                            decoration: const InputDecoration(hintText: 'Nhập nội dung mới'),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Hủy'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(context, controller.text),
+                              child: const Text('Lưu'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    if (newContent != null && newContent.trim().isNotEmpty && newContent != _postContent) {
+                      try {
+                        final result = await updatePostUseCase(id: widget.post.id, content: newContent.trim());
+                        if (result['success'] == true) {
+                          if (mounted) {
+                            setState(() {
+                              _postContent = newContent.trim();
+                            });
+                            CustomSnackBar.showSuccess(
+                              context: context,
+                              message: 'Cập nhật bài viết thành công!',
+                            );
+                          }
+                        } else {
+                          CustomSnackBar.showError(
+                            context: context,
+                            message: result['error'] ?? 'Cập nhật thất bại',
+                          );
+                        }
+                      } catch (e) {
+                        CustomSnackBar.showError(
+                          context: context,
+                          message: 'Lỗi: $e',
+                        );
+                      }
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text('Xóa bài viết', style: TextStyle(color: Colors.red)),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Xác nhận xóa'),
+                        content: const Text('Bạn có chắc chắn muốn xóa bài viết này?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Hủy'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('Xóa'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      try {
+                        final result = await deletePostUseCase(id: widget.post.id);
+                        if (result['success'] == true) {
+                          if (mounted) {
+                            CustomSnackBar.showSuccess(
+                              context: context,
+                              message: 'Đã xóa bài viết!',
+                            );
+                            if (widget.onDelete != null) {
+                              widget.onDelete!();
+                            }
+                          }
+                        } else {
+                          CustomSnackBar.showError(
+                            context: context,
+                            message: result['error'] ?? 'Xóa thất bại',
+                          );
+                        }
+                      } catch (e) {
+                        CustomSnackBar.showError(
+                          context: context,
+                          message: 'Lỗi: $e',
+                        );
+                      }
+                    }
+                  },
+                ),
+              ] else ...[
+                ListTile(
+                  leading: const Icon(Icons.flag, color: Colors.red),
+                  title: const Text('Báo cáo bài viết', style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    CustomSnackBar.showError(
+                      context: context,
+                      message: 'Tính năng báo cáo sẽ được phát triển sau!',
+                    );
+                  },
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final apiClient = sl<ApiClient>();
@@ -294,9 +461,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                   ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  onPressed: () {
-                    // TODO: Implement post options menu
-                  },
+                  onPressed: () => _showPostOptionsMenu(context),
                 ),
               ],
             ),
@@ -445,7 +610,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
             ),
 
           // Caption
-          if (widget.post.content.isNotEmpty)
+          if (_postContent.isNotEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 4.0),
               child: RichText(
@@ -459,7 +624,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                       text: '${widget.post.author.username} ',
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    TextSpan(text: widget.post.content),
+                    TextSpan(text: _postContent),
                   ],
                 ),
               ),
@@ -508,7 +673,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                 _isCommentsExpanded = !_isCommentsExpanded;
               });
             },
-            postContent: widget.post.content, // Truyền nội dung bài đăng
+            postContent: _postContent, // Truyền nội dung bài đăng
           ),
           // AI Suggestion Widget
           AiSuggestionWidget(
