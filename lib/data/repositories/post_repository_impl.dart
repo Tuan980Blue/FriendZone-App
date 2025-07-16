@@ -48,4 +48,29 @@ class PostRepositoryImpl implements PostRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> updatePost({
+    required String id,
+    required String content,
+  }) async {
+    try {
+      return await _remoteDataSource.updatePost(id: id, content: content);
+    } catch (e) {
+      print('Error in repository while updating post: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> deletePost({
+    required String id,
+  }) async {
+    try {
+      return await _remoteDataSource.deletePost(id: id);
+    } catch (e) {
+      print('Error in repository while deleting post: $e');
+      rethrow;
+    }
+  }
 } 

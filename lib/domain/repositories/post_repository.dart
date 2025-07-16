@@ -9,4 +9,11 @@ abstract class PostRepository {
     required String content,
     required List<String> imageUrls,
   });
+  Future<Map<String, dynamic>> updatePost({
+    required String id,
+    required String content,
+  });
+  Future<Map<String, dynamic>> deletePost({
+    required String id,
+  });
 } 
