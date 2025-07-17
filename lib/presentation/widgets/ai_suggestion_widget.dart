@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 import '../../services/ai_suggestion_service.dart';
 import 'ai_chat_dialog.dart';
 
@@ -109,14 +108,14 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget> {
           children: [
             Row(
               children: [
-                const Icon(Icons.smart_toy, color: Colors.blueAccent, size: 22),
+                const Icon(Icons.lightbulb_outline, color: Colors.blueAccent, size: 22),
                 const SizedBox(width: 8),
                 const Text(
                   'AI gợi ý câu hỏi:',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    fontFamily: 'Roboto', // hoặc GoogleFonts.nunito nếu có
+                    fontFamily: 'Roboto',
                     color: Colors.blueAccent,
                     letterSpacing: 0.2,
                   ),
@@ -124,56 +123,60 @@ class _AiSuggestionWidgetState extends State<AiSuggestionWidget> {
               ],
             ),
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 10,
-              runSpacing: 6,
-              children: _suggestions.map((s) => ActionChip(
-                avatar: const Icon(Icons.smart_toy, color: Colors.blueAccent, size: 18),
-                backgroundColor: Colors.blue[50],
-                label: Text(
-                  s,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Roboto', // hoặc GoogleFonts.nunito nếu có
-                    color: Colors.blueAccent,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: Colors.blueAccent, width: 0.5),
-                ),
-                elevation: 1,
-                onPressed: () {
-                  widget.onSuggestionTap(s);
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (ctx) => DraggableScrollableSheet(
-                      initialChildSize: 0.7,
-                      minChildSize: 0.5,
-                      maxChildSize: 0.95,
-                      expand: false,
-                      builder: (_, __) => Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-                        ),
-                        child: AIChatDialog(
-                          initialQuestion: s,
-                          apiKey: widget.apiKey,
-                          title: 'Hỏi AI về: "$s"',
-                        ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _suggestions.map((s) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ActionChip(
+                    avatar: const Icon(Icons.lightbulb_outline, color: Colors.blueAccent, size: 18),
+                    backgroundColor: Colors.blue[50],
+                    label: Text(
+                      s,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Roboto',
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  );
-                },
-              )).toList(),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.blueAccent, width: 0.5),
+                    ),
+                    elevation: 1,
+                    onPressed: () {
+                      widget.onSuggestionTap(s);
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (ctx) => DraggableScrollableSheet(
+                          initialChildSize: 0.7,
+                          minChildSize: 0.5,
+                          maxChildSize: 0.95,
+                          expand: false,
+                          builder: (_, __) => Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                            ),
+                            child: AIChatDialog(
+                              initialQuestion: s,
+                              apiKey: widget.apiKey,
+                              title: 'Hỏi AI về: "$s"',
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )).toList(),
+              ),
             ),
           ],
         ),
       ),
     );
   }
-} 
+}
