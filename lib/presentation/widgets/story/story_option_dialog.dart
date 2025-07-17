@@ -141,15 +141,23 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
                             child: const Text('Hủy'),
                           ),
                           ElevatedButton(
-                            onPressed: () async {
-                              if (_isCreatingStory) return;
+                            onPressed: _isCreatingStory
+                                ? null
+                                : () async {
                               if (!_formKey.currentState!.validate()) return;
+
+                              setState(() {
+                                _isCreatingStory = true;
+                              });
 
                               final uploadUseCase = sl<UploadStoryMediaUseCase>();
                               final createUseCase = sl<CreateStoryUseCase>();
 
                               final mediaUrl = await uploadUseCase.call(imageFile);
                               if (mediaUrl == null) {
+                                setState(() {
+                                  _isCreatingStory = false;
+                                });
                                 Navigator.pop(context);
                                 CustomSnackBar.showError(
                                   context: context,
@@ -168,6 +176,9 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
                                     isHighlighted: false,
                                   ),
                                 );
+                                setState(() {
+                                  _isCreatingStory = false;
+                                });
                                 Navigator.pop(context);
                                 Navigator.pop(context);
                                 CustomSnackBar.showSuccess(
@@ -175,6 +186,9 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
                                   message: "Tạo tin thành công",
                                 );
                               } catch (e) {
+                                setState(() {
+                                  _isCreatingStory = false;
+                                });
                                 Navigator.pop(context);
                                 CustomSnackBar.showError(
                                   context: context,
@@ -182,7 +196,16 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
                                 );
                               }
                             },
-                            child: const Text('Tạo tin'),
+                            child: _isCreatingStory
+                                ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                                : const Text('Tạo tin'),
                           ),
                         ],
                       ),
@@ -196,8 +219,6 @@ class _StoryOptionDialogState extends State<StoryOptionDialog> {
       },
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {

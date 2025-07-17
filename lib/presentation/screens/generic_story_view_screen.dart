@@ -58,21 +58,67 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
   }
 
   void _handleDeleteStory() async {
+    controller.pause();
     final storyId = currentStory.id;
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Xoá Story"),
-        content: const Text("Bạn có chắc chắn muốn xoá story này không?"),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0), // Rounded corners
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0), // More padding for title
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0), // More padding for content
+        actionsPadding: const EdgeInsets.all(16), // Padding around actions
+
+        title: const Text(
+          "Xoá Tin Này?",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.pinkAccent,
+          ),
+        ),
+        content: const Text(
+          "Bạn có chắc chắn muốn xoá tin này vĩnh viễn không? Hành động này không thể hoàn tác.", // More informative message
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.black87,
+          ),
+        ),
         actions: [
           TextButton(
-            child: const Text("Hủy"),
-            onPressed: () => Navigator.of(context).pop(false),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.grey[700], // Softer color for cancel
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+              controller.play();
+            },
+            child: const Text(
+              "Huỷ Bỏ",
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
-          TextButton(
-            child: const Text("Xoá", style: TextStyle(color: Colors.red)),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.pinkAccent,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              elevation: 0,
+            ),
             onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              "Xoá",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -297,7 +343,14 @@ class _GenericStoryViewScreenState extends State<GenericStoryViewScreen> {
                 ),
                 const Divider(height: 1),
                 Expanded(
-                  child: ListView.builder(
+                  child: viewers.isEmpty
+                      ? const Center(
+                        child: Text(
+                          "Chưa có người dùng nào.",
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      )
+                      : ListView.builder(
                     itemCount: viewers.length,
                     itemBuilder: (context, index) {
                       final viewer = viewers[index];
