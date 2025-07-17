@@ -521,7 +521,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
                 SnackBar(content: Text('Bạn đã chọn: $suggestion')),
               );
             },
-            apiKey: 'AIzaSyDeLLQ9_2-MRc3cFNHUOzZiNRdcMRXVcWA', // <-- Thay bằng API key thật của bạn
+            apiKey: 'AIzaSyCQ2smYylbVKVEhiHzHnnle_Fgy9Q6IztM',
           ),
         ],
       ),
