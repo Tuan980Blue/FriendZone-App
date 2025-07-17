@@ -9,6 +9,7 @@ import '../../../../core/network/api_client.dart';
 import '../../models/hightlight_model.dart';
 import '../../models/story_feed.dart';
 import '../../models/story_model.dart';
+import '../../models/story_viewer_model.dart';
 
 abstract class StoryRemoteDataSource {
   Future<List<StoryFeedItem>> fetchFeedStoryGroups();
@@ -24,6 +25,10 @@ abstract class StoryRemoteDataSource {
   Future<void> likeStory(String storyId);
   Future<void> createHighlight({required String name, required List<String> storyIds});
   Future<List<HighlightModel>> fetchHighlights({required String userId});
+  Future<void> deleteStory(String storyId);
+  Future<void> deleteHighlight(String storyId);
+  Future<List<StoryViewerModel>> fetchStoryViews(String storyId);
+  Future<List<StoryViewerModel>> fetchStoryLikes(String storyId);
 }
 
 class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
@@ -167,7 +172,7 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
 
   @override
   Future<List<HighlightModel>> fetchHighlights({required String userId}) async {
-    final response = await _apiClient.get('/stories/highlights/$userId');
+    final response = await _apiClient.get(ApiConstants.highlightByUserIdEndpoint(userId),);
     final data = json.decode(response.body);
 
     if (response.statusCode == 200 && data['success'] == true) {
@@ -177,5 +182,57 @@ class StoryRemoteDataSourceImpl implements StoryRemoteDataSource {
       throw ServerException(data['message'] ?? 'Failed to fetch highlights');
     }
   }
+
+  @override
+  Future<void> deleteStory(String storyId) async {
+    final response = await _apiClient.delete(ApiConstants.deleteStoryEndpoint(storyId));
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final data = json.decode(response.body);
+      throw ServerException(data['message'] ?? 'Xoá story thất bại');
+    }
+
+    debugPrint("✅ Đã xoá story $storyId");
+  }
+
+  @override
+  Future<void> deleteHighlight(String storyId) async {
+    final response = await _apiClient.delete(ApiConstants.deleteHightLightEndpoint(storyId));
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final data = json.decode(response.body);
+      throw ServerException(data['message'] ?? 'Xoá highlight thất bại');
+    }
+
+    debugPrint("✅ Đã xoá highlight $storyId");
+  }
+
+  @override
+  Future<List<StoryViewerModel>> fetchStoryViews(String storyId) async {
+    final response = await _apiClient.get(ApiConstants.viewsStoryEndpoint(storyId));
+    final data = json.decode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      final views = data['data']['views'] as List;
+      return views.map((e) => StoryViewerModel.fromJson(e)).toList();
+    } else {
+      throw ServerException(data['message'] ?? 'Lỗi khi lấy danh sách lượt xem');
+    }
+  }
+
+  @override
+  Future<List<StoryViewerModel>> fetchStoryLikes(String storyId) async {
+    final response = await _apiClient.get(ApiConstants.likesStoryEndpoint(storyId));
+    final data = json.decode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      final likes = data['data']['likes'] as List;
+      return likes.map((e) => StoryViewerModel.fromJson(e)).toList();
+    } else {
+      throw ServerException(data['message'] ?? 'Lỗi khi lấy danh sách lượt thích');
+    }
+  }
+
+
 
 }

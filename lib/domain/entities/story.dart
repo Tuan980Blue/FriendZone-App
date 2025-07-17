@@ -34,6 +34,57 @@ class Story extends Equatable {
     this.isLikedByCurrentUser = false,
   });
 
+  // --- ADD THIS copyWith METHOD ---
+  Story copyWith({
+    String? id,
+    String? mediaUrl,
+    String? mediaType,
+    DateTime? createdAt,
+    DateTime? expiresAt,
+    int? viewCount,
+    int? likeCount,
+    bool? isHighlighted,
+    String? location,
+    String? filter,
+    String? authorId,
+    String? highlightId,
+    User? author,
+    bool? isLikedByCurrentUser,
+  }) {
+    return Story(
+      id: id ?? this.id,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
+      mediaType: mediaType ?? this.mediaType,
+      createdAt: createdAt ?? this.createdAt,
+      expiresAt: expiresAt ?? this.expiresAt,
+      viewCount: viewCount ?? this.viewCount,
+      likeCount: likeCount ?? this.likeCount,
+      isHighlighted: isHighlighted ?? this.isHighlighted,
+      location: location ?? this.location,
+      filter: filter ?? this.filter,
+      authorId: authorId ?? this.authorId,
+      highlightId: highlightId ?? this.highlightId,
+      author: author ?? this.author,
+      isLikedByCurrentUser: isLikedByCurrentUser ?? this.isLikedByCurrentUser,
+    );
+  }
+  // --- END copyWith METHOD ---
+
   @override
-  List<Object?> get props => [id, mediaUrl, mediaType];
+  List<Object?> get props => [
+    id,
+    mediaUrl,
+    mediaType,
+    createdAt,
+    expiresAt,
+    viewCount,
+    likeCount,
+    isHighlighted,
+    location,
+    filter,
+    authorId,
+    highlightId,
+    author,
+    isLikedByCurrentUser,
+  ];
 }

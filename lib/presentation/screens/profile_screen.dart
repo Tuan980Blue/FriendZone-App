@@ -10,6 +10,7 @@ import '../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../domain/usecases/auth/logout_usecase.dart';
 import '../../domain/usecases/user/get_user_by_id_usecase.dart';
 import '../../domain/usecases/user/update_profile_usecase.dart';
+import '../widgets/story/story_option_dialog.dart';
 import 'chat_direct_messages_screen.dart';
 import 'highlight_stories_screen.dart';
 import 'highlight_viewer_screen.dart';
@@ -351,14 +352,10 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   }
 
   void _handleMessage() {
-    if (_user == null || isViewingOwnProfile) return;
-    Navigator.of(context).push(
-      AppPageTransitions.chatTransition(
-        DirectChatMessagesScreen(
-          userId: _user!.id,
-          userName: _user!.fullName,
-          userAvatar: _user!.avatar,
-        ),
+    // TODO: Implement message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Message functionality coming soon!'),
       ),
     );
   }

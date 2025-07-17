@@ -170,14 +170,14 @@ class _PostsPageState extends State<PostsPage> {
                         if (index == 0) {
                           return const Padding(
                             padding: EdgeInsets.only(right: 6.0),
-                            child: MyStoryCard(),
+                            child: CreateStoryEntry(text: 'Tạo tin'),
                           );
                         }
 
                         if (index == 1) {
                           return const Padding(
                             padding: EdgeInsets.only(right: 6.0),
-                            child: CreateStoryEntry(text: 'Tạo tin'),
+                            child: MyStoryCard(),
                           );
                         }
 

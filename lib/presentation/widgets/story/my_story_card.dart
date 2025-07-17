@@ -1,10 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:story_view/story_view.dart';
 import '../../../di/injection_container.dart';
+import '../../../domain/entities/story.dart';
 import '../../../domain/entities/user.dart';
 import '../../../domain/usecases/auth/get_current_user_usecase.dart';
 import '../../../domain/usecases/storys/get_my_stories_usecase.dart';
-import '../../../domain/entities/story.dart';
 import '../../screens/generic_story_view_screen.dart';
 
 class MyStoryCard extends StatefulWidget {
@@ -39,18 +39,21 @@ class _MyStoryCardState extends State<MyStoryCard> {
         }
 
         final user = userSnapshot.data!;
-        final userImageUrl = user.avatar;
+        final userImageUrl = user.avatar ?? '';
 
         return FutureBuilder<List<Story>>(
           future: _storiesFuture,
           builder: (context, storySnapshot) {
             final isDone = storySnapshot.connectionState == ConnectionState.done;
             final hasStories = isDone && storySnapshot.hasData && storySnapshot.data!.isNotEmpty;
+            final stories = storySnapshot.data ?? [];
+
+            final String storyImageUrl = hasStories
+                ? stories.first.mediaUrl
+                : 'https://via.placeholder.com/150'; // fallback image
 
             return GestureDetector(
               onTap: () {
-                final stories = storySnapshot.data;
-
                 if (!isDone) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Đang tải story...')),
@@ -58,36 +61,12 @@ class _MyStoryCardState extends State<MyStoryCard> {
                   return;
                 }
 
-                if (stories == null || stories.isEmpty) {
+                if (stories.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Bạn không có story nào')),
                   );
                   return;
                 }
-
-                final storyItems = stories.map((story) {
-                  final mediaUrl = story.mediaUrl;
-                  final location = story.location ?? '';
-
-                  if (story.mediaType.toUpperCase() == 'IMAGE') {
-                    return StoryItem.pageImage(
-                      url: mediaUrl,
-                      caption: Text(location),
-                      controller: StoryController(),
-                    );
-                  } else if (story.mediaType.toUpperCase() == 'VIDEO') {
-                    return StoryItem.pageVideo(
-                      mediaUrl,
-                      controller: StoryController(),
-                      caption: Text(location),
-                    );
-                  } else {
-                    return StoryItem.text(
-                      title: 'Unsupported Media',
-                      backgroundColor: Colors.red,
-                    );
-                  }
-                }).toList();
 
                 Navigator.push(
                   context,
@@ -95,6 +74,13 @@ class _MyStoryCardState extends State<MyStoryCard> {
                     builder: (_) => GenericStoryViewScreen(
                       stories: stories,
                       isMyStory: true,
+                      onDeleted: (deletedStoryId) {
+                        setState(() {
+                          _storiesFuture = _storiesFuture.then(
+                                (stories) => stories.where((s) => s.id != deletedStoryId).toList(),
+                          );
+                        });
+                      },
                     ),
                   ),
                 );
@@ -102,56 +88,81 @@ class _MyStoryCardState extends State<MyStoryCard> {
               child: Container(
                 width: 115,
                 height: 190,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
+                margin: const EdgeInsets.symmetric(horizontal: 1),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: hasStories ? Colors.pink[100] : Colors.grey[300],
-                  border: Border.all(
-                    color: hasStories ? Colors.blue : Colors.grey[400]!,
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white,
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Stack(
                   children: [
-                    // Avatar
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: hasStories ? Colors.blue : Colors.grey,
-                          width: 2,
+                    // Story image background
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        storyImageUrl,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: Colors.grey[200],
+                          child: const Center(child: Icon(Icons.image, size: 40)),
                         ),
                       ),
-                      child: CircleAvatar(
-                        backgroundImage: userImageUrl != null
-                            ? NetworkImage(userImageUrl)
-                            : null,
-                        child: userImageUrl == null
-                            ? const Icon(Icons.person, size: 28, color: Colors.grey)
-                            : null,
+                    ),
+
+                    // Gradient overlay
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.6),
+                            Colors.transparent,
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      "My Story",
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+
+                    // Avatar
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.blue, width: 2),
+                        ),
+                        child: CircleAvatar(
+                          radius: 16,
+                          backgroundImage: userImageUrl.isNotEmpty ? NetworkImage(userImageUrl) : null,
+                          child: userImageUrl.isEmpty
+                              ? const Icon(Icons.person, size: 16)
+                              : null,
+                        ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    )
+                    ),
+
+                    // My Story text
+                    Positioned(
+                      bottom: 10,
+                      left: 8,
+                      right: 8,
+                      child: const Text(
+                        "My Story",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -164,9 +175,9 @@ class _MyStoryCardState extends State<MyStoryCard> {
 
   Widget _buildLoadingPlaceholder() {
     return Container(
-      width: 110,
+      width: 115,
       height: 190,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: Colors.grey[200],
@@ -177,9 +188,9 @@ class _MyStoryCardState extends State<MyStoryCard> {
 
   Widget _buildErrorPlaceholder() {
     return Container(
-      width: 110,
+      width: 115,
       height: 190,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         color: Colors.grey[200],
