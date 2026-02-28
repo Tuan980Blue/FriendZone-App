@@ -29,7 +29,7 @@ Người dùng có thể nhắn tin, tương tác bài post, và cập nhật tr
 - 📝 <span style="font-size:16px"><strong>Đăng bài viết:</strong></span> Chia sẻ nội dung cá nhân một cách dễ dàng.  
 - ❤️ <strong>Tương tác bài đăng:</strong> Like, bình luận và kết nối với bạn bè.  
 - 🔥 <strong>Giao tiếp thời gian thực:</strong> Tin nhắn & thông báo được cập nhật ngay lập tức qua WebSocket.  
-- 💬 <strong>Phòng chat riêng & nhóm:</strong> Giao tiếp 1-1 hoặc theo nhóm cực kỳ mượt mà.  
+- 💬 <strong>Phòng chat riêng:</strong> Giao tiếp 1-1 cực kỳ mượt mà.  
 - 🟢 <strong>Trạng thái người dùng:</strong> Biết ngay ai đang online/offline.  
 - 📸 <strong>Cập nhật trạng thái:</strong> Chia sẻ cảm xúc, hình ảnh, hoặc bất kỳ điều gì bạn muốn.  
 - 🔐 <strong>Xác thực người dùng:</strong> Bảo mật an toàn bằng JWT.  
@@ -59,4 +59,5 @@ Người dùng có thể nhắn tin, tương tác bài post, và cập nhật tr
 <p align="center">
   ⭐️ Cảm ơn bạn đã ghé thăm! Nếu thấy hữu ích, hãy để lại một ⭐️ nhé!
 </p>
+
 
